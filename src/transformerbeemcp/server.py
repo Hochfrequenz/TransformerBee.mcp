@@ -74,7 +74,7 @@ mcp = FastMCP("TransformerBee.mcp", dependencies=["transformerbeeclient"], lifes
 
 @mcp.tool(description="Convert an EDIFACT message to its BO4E equivalent")
 async def convert_edifact_to_bo4e(
-    ctx: Context,# type:ignore[type-arg] # no idea what the second type arg is
+    ctx: Context,  # type:ignore[type-arg] # no idea what the second type arg is
     edifact: str,
     edifact_format_version: EdifactFormatVersion | None = None,
 ) -> dict[str, Any]:

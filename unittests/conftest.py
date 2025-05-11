@@ -3,7 +3,7 @@
 import pytest
 from efoli import EdifactFormatVersion
 from mcp.client.session import ClientSession
-from mcp.server import Server, FastMCP
+from mcp.server import FastMCP
 from mcp.shared.memory import (
     create_connected_server_and_client_session,
 )
