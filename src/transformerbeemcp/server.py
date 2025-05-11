@@ -32,6 +32,23 @@ class AppContext:
     transformerbeeclient: TransformerBeeClient
 
 
+def create_client(host: str, client_id: str | None, client_secret: str | None) -> TransformerBeeClient:
+    """create a new transformer.bee client"""
+    if not client_id or not client_secret:
+        _logger.info(
+            "Environment variables '%s' and/or '%s' are not set, using unauthenticated client",
+            _CLIENT_ID_KEY,
+            _CLIENT_SECRET_KEY,
+        )
+        return UnauthenticatedTransformerBeeClient(host)
+    _logger.info("Using authenticated client id '%s' and respective secret", client_id)
+    return AuthenticatedTransformerBeeClient(  # type:ignore[assignment]
+        host,
+        oauth_client_id=client_id,
+        oauth_client_secret=client_secret,
+    )
+
+
 @asynccontextmanager
 async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:  # pylint:disable=unused-argument
     """Manage application lifecycle with type-safe context"""
@@ -39,24 +56,11 @@ async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:  # pylint:
     transformerbee_host: str | None = os.environ.get(_HOST_KEY, None)
     if not transformerbee_host:
         raise ValueError(f"Environment variable '{_HOST_KEY}' not set")
+
     _logger.info("Using host '%s'", transformerbee_host)
     transformerbee_client_id: str | None = os.environ.get(_CLIENT_ID_KEY, None)
     transformerbee_client_secret: str | None = os.environ.get(_CLIENT_SECRET_KEY, None)
-    transformerbee_client: TransformerBeeClient
-    if (not transformerbee_client_id) or (not transformerbee_client_secret):
-        _logger.info(
-            "Environment variables '%s' and/or '%s' are not set, using unauthenticated client",
-            _CLIENT_ID_KEY,
-            _CLIENT_SECRET_KEY,
-        )
-        transformerbee_client = UnauthenticatedTransformerBeeClient(transformerbee_host)
-    else:
-        _logger.info("Using authenticated client id '%s' and respective secret", transformerbee_client_id)
-        transformerbee_client = AuthenticatedTransformerBeeClient(  # type:ignore[assignment]
-            transformerbee_host,
-            oauth_client_id=transformerbee_client_id,
-            oauth_client_secret=transformerbee_client_secret,
-        )
+    transformerbee_client = create_client(transformerbee_host, transformerbee_client_id, transformerbee_client_secret)
     try:
         _logger.info("Instantiating context")
         yield AppContext(transformerbeeclient=transformerbee_client)
