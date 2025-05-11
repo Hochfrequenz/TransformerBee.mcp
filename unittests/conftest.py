@@ -3,7 +3,7 @@
 import pytest
 from efoli import EdifactFormatVersion
 from mcp.client.session import ClientSession
-from mcp.server import Server
+from mcp.server import Server, FastMCP
 from mcp.shared.memory import (
     create_connected_server_and_client_session,
 )
@@ -19,9 +19,11 @@ def anyio_backend() -> Literal["asyncio"]:
     return "asyncio"
 
 
-#pylint:disable=unused-argument
+# pylint:disable=unused-argument
 class DummyClient:
-    def __init__(self, host):
+    """we mock the client because the transformerbee client alone is already integration tested with the real backend"""
+
+    def __init__(self, host: str) -> None:
         self.host = host
 
     async def convert_to_edifact(self, boney_comb: BOneyComb, edifact_format_version: EdifactFormatVersion) -> str:
@@ -34,7 +36,7 @@ class DummyClient:
                 stammdaten=[],
                 transaktionen=[BOneyComb(stammdaten=[], transaktionsdaten={"foo": "bar"})],
                 nachrichtendaten={},
-                unh="dummy_unh",
+                UNH="dummy_unh",
             )
         ]
 
@@ -42,20 +44,21 @@ class DummyClient:
 @pytest.fixture
 def inject_dummy_client(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_create_client(host: str, client_id: str | None, client_secret: str | None) -> TransformerBeeClient:
-        return DummyClient(host)
+        return DummyClient(host) # type:ignore[return-value]
+
     # pylint:disable=protected-access
     monkeypatch.setattr(_transformerbeeservermodule, "create_client", fake_create_client)
 
 
 @pytest.fixture
-def transformerbee_mcp_server() -> Server:
+def transformerbee_mcp_server() -> FastMCP:
     server = mcp
     return server
 
 
 @pytest.fixture
 async def client_connected_to_server(
-    transformerbee_mcp_server: Server, monkeypatch: pytest.MonkeyPatch, inject_dummy_client: None
+    transformerbee_mcp_server: FastMCP, monkeypatch: pytest.MonkeyPatch, inject_dummy_client: None
 ) -> AsyncGenerator[ClientSession, None]:
     monkeypatch.setenv("TRANSFORMERBEE_HOST", "https://mock.com")
     # pylint:disable=protected-access

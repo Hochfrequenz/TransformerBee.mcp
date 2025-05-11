@@ -42,7 +42,7 @@ def create_client(host: str, client_id: str | None, client_secret: str | None) -
         )
         return UnauthenticatedTransformerBeeClient(host)
     _logger.info("Using authenticated client id '%s' and respective secret", client_id)
-    return AuthenticatedTransformerBeeClient(  # type:ignore[assignment]
+    return AuthenticatedTransformerBeeClient(  # type:ignore[return-value]
         host,
         oauth_client_id=client_id,
         oauth_client_secret=client_secret,
@@ -74,7 +74,9 @@ mcp = FastMCP("TransformerBee.mcp", dependencies=["transformerbeeclient"], lifes
 
 @mcp.tool(description="Convert an EDIFACT message to its BO4E equivalent")
 async def convert_edifact_to_bo4e(
-    ctx: Context, edifact: str, edifact_format_version: EdifactFormatVersion | None = None
+    ctx: Context,# type:ignore[type-arg] # no idea what the second type arg is
+    edifact: str,
+    edifact_format_version: EdifactFormatVersion | None = None,
 ) -> dict[str, Any]:
     """Tool that uses initialized resources"""
     _logger.debug("Context: %s", str(ctx.request_context.lifespan_context))
@@ -102,7 +104,7 @@ async def convert_edifact_to_bo4e(
 
 @mcp.tool(description="Convert a BO4E transaktion to its EDIFACT equivalent")
 async def convert_bo4e_to_edifact(
-    ctx: Context,
+    ctx: Context,  # type:ignore[type-arg] # no idea what the second type arg is
     transaktion: BOneyComb,
     edifact_format_version: EdifactFormatVersion | None = None,
 ) -> str:
