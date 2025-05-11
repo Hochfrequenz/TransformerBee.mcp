@@ -44,3 +44,5 @@ Modify your `claude_desktop_config.json` (that can be found in Claude Desktop me
 }
 ```
 where `C:\path\to\myvenv` is the path to your virtual environment where you installed the package.
+
+For details about the environment variables and/or starting transformer.bee locally, check [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py) docs.
