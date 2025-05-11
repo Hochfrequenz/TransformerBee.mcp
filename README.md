@@ -32,7 +32,7 @@ Modify your `claude_desktop_config.json` (that can be found in Claude Desktop me
 {
   "mcpServers": {
     "TransformerBee.mcp": {
-      "command": "C:\\github\\TransformerBee.mcp\\.tox\\dev\\Scripts\\run-transformerbee-mcp-server",
+      "command": "C:\\github\\MyProject\\.myvenv\\Scripts\\run-transformerbee-mcp-server.exe",
       "args": [],
       "env": {
         "TRANSFORMERBEE_HOST": "http://localhost:5021",
