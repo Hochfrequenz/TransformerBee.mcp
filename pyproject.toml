@@ -1,10 +1,10 @@
 [project]
-name = "your-favourite-package-name"
-description = "Description of your package"
+name = "transformerbee.mpc"
+description = "MCP server for transformer.bee"
 license = { text = "MIT" }
 requires-python = ">=3.11"
-authors = [{ name = "your name", email = "your@email.address" }]
-keywords = ["your", "important", "keywords"]
+authors = [{ name = "Hochfrequenz Unternehmensberatung GmbH", email = "info+pip@hochfrequenz.de" }]
+keywords = ["edifact", "bo4e", "mcp", "transformerbee"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -17,7 +17,10 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = []     # add all the dependencies here
+dependencies = [
+    "mcp[cli]",
+    "transformerbeeclient>=0.2.2"
+]     # add all the dependencies here
 dynamic = ["readme", "version"]
 
 [project.optional-dependencies]
@@ -28,7 +31,7 @@ linting = [
     "pylint==3.3.7"
 ]
 type_check = [
-    "mypy==1.15.0"
+    "mypy[pydantic]==1.15.0"
 ]
 spell_check = [
     "codespell==2.4.1"
@@ -45,7 +48,8 @@ packaging = [
     "twine==6.1.0"
 ]
 dev = [
-    "pip-tools"
+    "pip-tools",
+    "uv" # because UV is the default package manager used in MCP project but our setup is still heavily pip-based
 ]
 
 
@@ -93,3 +97,9 @@ exclude = ["/unittests"]
 [tool.hatch.build.targets.wheel]
 only-include = ["src"]
 sources = ["src"]
+
+[project.scripts]
+run-transformerbee-mcp-server = "transformerbeemcp.server:main"
+# package transformerbeempc
+# module server
+# function main
