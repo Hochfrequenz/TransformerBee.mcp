@@ -26,12 +26,16 @@ async def test_convert_edifact_to_bo4e(client_connected_to_server: FastMCP) -> N
     assert "stammdaten" in deserialized_response.keys()
     assert deserialized_response["transaktionsdaten"]["foo"] == "bar"
 
+
 @pytest.mark.anyio
 async def test_convert_bo4e_to_edifact(client_connected_to_server: FastMCP) -> None:
     """Testet das Tool zum Konvertieren von EDIFACT zu BO4E."""
-    response = await client_connected_to_server.call_tool("convert_bo4e_to_edifact", {"transaktion": BOneyComb(transaktionsdaten={}, stammdaten=[]), "edifact_format_version":"FV2504"})
+    response = await client_connected_to_server.call_tool(
+        "convert_bo4e_to_edifact",
+        {"transaktion": BOneyComb(transaktionsdaten={}, stammdaten=[]), "edifact_format_version": "FV2504"},
+    )
     assert isinstance(response, CallToolResult)
-    assert response.content[0].text =="dummy_edifact_message"
+    assert response.content[0].text == "dummy_edifact_message"
 
 
 @pytest.mark.anyio

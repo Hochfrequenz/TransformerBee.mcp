@@ -47,7 +47,7 @@ class DummyClient:
 @pytest.fixture
 def inject_dummy_client(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_create_client(host: str, client_id: str | None, client_secret: str | None) -> TransformerBeeClient:
-        return DummyClient(host) # type:ignore[return-value]
+        return DummyClient(host)  # type:ignore[return-value]
 
     # pylint:disable=protected-access
     monkeypatch.setattr(_transformerbeeservermodule, "create_client", fake_create_client)
