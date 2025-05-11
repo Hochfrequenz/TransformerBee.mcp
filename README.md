@@ -27,7 +27,7 @@ cd path/to/reporoot/src/transformerbeemcp
 mcp install server.py
 ```
 ### If you installed the package via pip/uv
-Modify your `claude_desktop_config.json` (that can be found in Claude Desktop menu via "Datei > Einstellungen > Entwickler > Konfiguration bearbeiten":
+Modify your `claude_desktop_config.json` (that can be found in Claude Desktop menu via "Datei > Einstellungen > Entwickler > Konfiguration bearbeiten"):
 ```json
 {
   "mcpServers": {
@@ -43,6 +43,6 @@ Modify your `claude_desktop_config.json` (that can be found in Claude Desktop me
   }
 }
 ```
-where `C:\path\to\myvenv` is the path to your virtual environment where you installed the package.
+where `C:\path\to\myvenv` is the path to your virtual environment where you installed the package and `localhost:5021` exposes transformer.bee running in a docker container.
 
 For details about the environment variables and/or starting transformer.bee locally, check [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py) docs.
