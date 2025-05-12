@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+      - name: Get version tag
+        run: |
+          VERSION=$(echo ${GITHUB_REF#refs/tags/})
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Log in to GHCR
         # the GHCR_PUSH_TOKEN has repo and WRITE:package scope and expires on 2026-05-11
         # https://github.com/Hochfrequenz/transformerbee.mcp/settings/secrets/actions/GHCR_PUSH_TOKEN
