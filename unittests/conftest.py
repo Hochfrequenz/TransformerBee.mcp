@@ -20,7 +20,7 @@ def anyio_backend() -> Literal["asyncio"]:
 
 
 # pylint:disable=unused-argument
-class DummyClient:
+class DummyClient(TransformerBeeClient):
     """
     We mock the client because the transformer.bee client alone is already integration tested against the real backend.
     That's the big benefit of having client libraries and proper encapsulation instead of HTTP calls everywhere.
@@ -28,6 +28,7 @@ class DummyClient:
 
     def __init__(self, host: str) -> None:
         self.host = host
+        TransformerBeeClient.__init__(self)
 
     async def convert_to_edifact(self, boney_comb: BOneyComb, edifact_format_version: EdifactFormatVersion) -> str:
         return "dummy_edifact_message"
@@ -47,7 +48,7 @@ class DummyClient:
 @pytest.fixture
 def inject_dummy_client(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_create_client(host: str, client_id: str | None, client_secret: str | None) -> TransformerBeeClient:
-        return DummyClient(host)  # type:ignore[return-value]
+        return DummyClient(host)
 
     # pylint:disable=protected-access
     monkeypatch.setattr(_transformerbeeservermodule, "create_client", fake_create_client)

@@ -19,7 +19,7 @@ classifiers = [
 ]
 dependencies = [
     "mcp[cli]",
-    "transformerbeeclient>=0.2.2"
+    "transformerbeeclient>=0.2.3"
 ]     # add all the dependencies here
 dynamic = ["readme", "version"]
 
