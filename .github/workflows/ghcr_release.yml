@@ -20,7 +20,6 @@ jobs:
         # the GHCR_PUSH_TOKEN has repo and WRITE:package scope and expires on 2026-05-11
         # https://github.com/Hochfrequenz/transformerbee.mcp/settings/secrets/actions/GHCR_PUSH_TOKEN
         # The GHCR_PUSH_TOKEN has to match the GHCR_PUSH_USER.
-        # I separated push and potentially pull token to have more control over the permissions.
         run: echo "${{ secrets.GHCR_PUSH_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_PUSH_USER }}" --password-stdin
 
       - name: Build and push
