@@ -42,7 +42,7 @@ def create_client(host: str, client_id: str | None, client_secret: str | None) -
         )
         return UnauthenticatedTransformerBeeClient(host)
     _logger.info("Using authenticated client id '%s' and respective secret", client_id)
-    return AuthenticatedTransformerBeeClient(  # type:ignore[return-value]
+    return AuthenticatedTransformerBeeClient(
         host,
         oauth_client_id=client_id,
         oauth_client_secret=client_secret,
