@@ -28,6 +28,7 @@ class DummyClient(TransformerBeeClient):
 
     def __init__(self, host: str) -> None:
         self.host = host
+        TransformerBeeClient.__init__(self)
 
     async def convert_to_edifact(self, boney_comb: BOneyComb, edifact_format_version: EdifactFormatVersion) -> str:
         return "dummy_edifact_message"
