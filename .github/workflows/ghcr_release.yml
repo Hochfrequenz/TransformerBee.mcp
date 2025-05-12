@@ -1,0 +1,28 @@
+name: Publish Docker image to Github Container Registry GHCR
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to GHCR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Log in to GHCR
+        # the GHCR_PUSH_TOKEN has repo and WRITE:package scope and expires on 2026-05-11
+        # https://github.com/Hochfrequenz/transformerbee.mcp/settings/secrets/actions/GHCR_PUSH_TOKEN
+        # The GHCR_PUSH_TOKEN has to match the GHCR_PUSH_USER.
+        # I separated push and potentially pull token to have more control over the permissions.
+        run: echo "${{ secrets.GHCR_PUSH_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_PUSH_USER }}" --password-stdin
+
+      - name: Build and push
+        run: |
+          docker build -t transformerbee.mcp:$VERSION --progress=plain --no-cache .
+          docker tag transformerbee.mcp:$VERSION ghcr.io/hochfrequenz/transformerbee.mcp:$VERSION
+          docker tag transformerbee.mcp:$VERSION ghcr.io/hochfrequenz/transformerbee.mcp:latest
+          docker push ghcr.io/hochfrequenz/transformerbee.mcp:$VERSION
+          docker push ghcr.io/hochfrequenz/transformerbee.mcp:latest
