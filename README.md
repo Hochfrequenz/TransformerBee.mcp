@@ -43,6 +43,12 @@ Modify your `claude_desktop_config.json` (that can be found in Claude Desktop me
   }
 }
 ```
-where `"C:\github\MyProject\.myvenv` is the path to your virtual environment where you installed the package and `localhost:5021` exposes transformer.bee running in a docker container.
+where `C:\github\MyProject\.myvenv` is the path to your virtual environment where you installed the package and `localhost:5021` exposes transformer.bee running in a docker container.
+Alternatively, if you haven't configured this handy CLI command
+https://github.com/Hochfrequenz/TransformerBee.mcp/blob/c0898769670469df13f23b57a55fe4b71ed9795b/pyproject.toml#L101-L102
+
+you can just call python with non-empty args.
+
+Note that this package marks `uv` as a dev-dependency, so you might need to install it `pip install transformerbeempc[dev]` in your virtual environment as well as a lot of MCP tooling assumes you have `uv` installed.
 
 For details about the environment variables and/or starting transformer.bee locally, check [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py) docs.
