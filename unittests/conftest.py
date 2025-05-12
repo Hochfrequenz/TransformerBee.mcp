@@ -20,7 +20,7 @@ def anyio_backend() -> Literal["asyncio"]:
 
 
 # pylint:disable=unused-argument
-class DummyClient:
+class DummyClient(TransformerBeeClient):
     """
     We mock the client because the transformer.bee client alone is already integration tested against the real backend.
     That's the big benefit of having client libraries and proper encapsulation instead of HTTP calls everywhere.
