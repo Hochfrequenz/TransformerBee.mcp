@@ -21,4 +21,6 @@ COPY --chown=appuser:appuser src/ ./src/
 
 USER appuser
 
+# the tail command is to not directly exit after starting the server
+# feel free to remove it, but please manually test your changes ;)
 ENTRYPOINT ["sh", "-c", "mcp run src/transformerbeemcp/server.py && tail -f /dev/null"]
