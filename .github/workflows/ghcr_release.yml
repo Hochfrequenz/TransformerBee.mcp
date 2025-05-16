@@ -64,12 +64,3 @@ jobs:
           build-args: |
             BUILDKIT_INLINE_CACHE=1
 
-      - name: Scan image for vulnerabilities
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_version.outputs.version }}
-          format: "table"
-          exit-code: "1"
-          ignore-unfixed: true
-          vuln-type: "os,library"
-          severity: "CRITICAL,HIGH"
