@@ -4,6 +4,8 @@ This is a simple PoC of a Model Context Protocol (MCP) server for [transformer.b
 Under the hood it uses [`python-mdc`](https://github.com/modelcontextprotocol/python-sdk) and [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py).
 
 ## Installation
+You can install the MCP server as Python package or pull the Docker image.
+### Install as Python Package
 ```shell
 uv install transformerbeemcp
 ```
@@ -11,16 +13,26 @@ or if you are using `pip`:
 ```sh
 pip install transformerbeemcp
 ```
+### Install as Docker Image
+```sh
+docker pull ghcr.io/hochfrequenz/transformerbee.mcp:latest
+```
 
-## Start the Server inside the CLI
-The package ships a simple CLI argument to start the server.
+## Start the Server via CLI 
+### Python
+_The package ships a simple CLI argument to start the server.
 In a terminal **inside the virtual environment in which you installed the package (here `myvenv`)**, call:
 
 ```sh
 (myvenv) run-transformerbee-mcp-server
 ```
+### Docker
+```sh
+docker run --network host -i --rm -e TRANSFORMERBEE_HOST=http://localhost:5021 ghcr.io/hochfrequenz/transformerbee.mcp:latest
+```
+(For the environment variables `-e ...`, see below or the `transformerbeeclient.py` docs.)
 
-## Install directly into Claude Desktop
+## Register MCP Server in Claude Desktop
 ### If you checked out this repository
 ```sh
 cd path/to/reporoot/src/transformerbeemcp
@@ -52,3 +64,30 @@ you can just call python with non-empty args.
 Note that this package marks `uv` as a dev-dependency, so you might need to install it `pip install transformerbeempc[dev]` in your virtual environment as well as a lot of MCP tooling assumes you have `uv` installed.
 
 For details about the environment variables and/or starting transformer.bee locally, check [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py) docs.
+
+### If you installed the package via Docker
+```json
+{
+  "mcpServers": {
+    "TransformerBee.mcp": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--network",
+        "host",
+        "-i",
+        "--rm",
+        "-e",
+        "TRANSFORMERBEE_HOST=http://localhost:5021",
+        "ghcr.io/hochfrequenz/transformerbee.mcp:latest"
+      ],
+      "env": {
+        "TRANSFORMERBEE_HOST": "http://localhost:5021",
+        "TRANSFORMERBEE_CLIENT_ID": "",
+        "TRANSFORMERBEE_CLIENT_SECRET": ""
+      }
+    }
+  }
+}
+```
+I'm aware, that using the `--network host` option is a bit hacky and not best practice.
