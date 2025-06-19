@@ -8,7 +8,7 @@ aioauth-client==0.30.1
     # via transformerbeeclient
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp[speedups]==3.11.18
+aiohttp[speedups]==3.12.13
     # via transformerbeeclient
 aiosignal==1.3.2
     # via aiohttp
