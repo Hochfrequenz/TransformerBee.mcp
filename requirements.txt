@@ -121,5 +121,5 @@ typing-inspection==0.4.1
     #   pydantic-settings
 uvicorn==0.34.2
     # via mcp
-yarl==1.20.0
+yarl==1.20.1
     # via aiohttp
