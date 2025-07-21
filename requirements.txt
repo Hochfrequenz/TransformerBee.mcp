@@ -108,7 +108,7 @@ transformerbeeclient==0.2.3
     # via your-favourite-package-name (pyproject.toml)
 typer==0.16.0
     # via mcp
-typing-extensions==4.14.0
+typing-extensions==4.14.1
     # via
     #   anyio
     #   pydantic
