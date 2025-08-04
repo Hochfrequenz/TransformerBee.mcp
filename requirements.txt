@@ -63,7 +63,7 @@ mcp[cli]==1.9.3
     # via your-favourite-package-name (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
-multidict==6.5.0
+multidict==6.6.3
     # via
     #   aiohttp
     #   yarl
