@@ -78,7 +78,7 @@ pydantic==2.11.7
     #   transformerbeeclient
 pydantic-core==2.33.2
     # via pydantic
-pydantic-settings==2.9.1
+pydantic-settings==2.10.1
     # via mcp
 pygments==2.19.2
     # via rich
