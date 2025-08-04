@@ -84,7 +84,7 @@ pygments==2.19.2
     # via rich
 pyjwt==2.10.1
     # via transformerbeeclient
-python-dotenv==1.1.0
+python-dotenv==1.1.1
     # via
     #   mcp
     #   pydantic-settings
