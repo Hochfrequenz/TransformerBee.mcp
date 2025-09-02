@@ -59,7 +59,7 @@ idna==3.10
     #   yarl
 markdown-it-py==4.0.0
     # via rich
-mcp[cli]==1.12.4
+mcp[cli]==1.13.1
     # via your-favourite-package-name (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
