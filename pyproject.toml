@@ -28,7 +28,7 @@ tests = [
     "pytest==8.4.1"
 ]
 linting = [
-    "pylint==3.3.7"
+    "pylint==3.3.8"
 ]
 type_check = [
     "mypy[pydantic]==1.17.1"
