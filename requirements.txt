@@ -106,7 +106,7 @@ starlette==0.47.0
     #   sse-starlette
 transformerbeeclient==0.2.3
     # via your-favourite-package-name (pyproject.toml)
-typer==0.17.4
+typer==0.19.1
     # via mcp
 typing-extensions==4.15.0
     # via
