@@ -20,7 +20,7 @@ anyio==4.10.0
     #   mcp
     #   sse-starlette
     #   starlette
-attrs==25.3.0
+attrs==25.4.0
     # via aiohttp
 brotli==1.1.0
     # via aiohttp
@@ -50,7 +50,7 @@ httpx==0.28.1
     # via
     #   aioauth-client
     #   mcp
-httpx-sse==0.4.0
+httpx-sse==0.4.1
     # via mcp
 idna==3.10
     # via
@@ -59,7 +59,7 @@ idna==3.10
     #   yarl
 markdown-it-py==4.0.0
     # via rich
-mcp[cli]==1.13.1
+mcp[cli]==1.14.1
     # via your-favourite-package-name (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
@@ -71,7 +71,7 @@ propcache==0.3.2
     # via
     #   aiohttp
     #   yarl
-pydantic==2.11.7
+pydantic==2.11.9
     # via
     #   mcp
     #   pydantic-settings
@@ -106,7 +106,7 @@ starlette==0.47.0
     #   sse-starlette
 transformerbeeclient==0.2.3
     # via your-favourite-package-name (pyproject.toml)
-typer==0.16.0
+typer==0.19.2
     # via mcp
 typing-extensions==4.15.0
     # via
@@ -115,11 +115,11 @@ typing-extensions==4.15.0
     #   pydantic-core
     #   typer
     #   typing-inspection
-typing-inspection==0.4.1
+typing-inspection==0.4.2
     # via
     #   pydantic
     #   pydantic-settings
-uvicorn==0.34.2
+uvicorn==0.38.0
     # via mcp
 yarl==1.20.1
     # via aiohttp
