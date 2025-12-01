@@ -1,7 +1,7 @@
 # TransformerBee.MCP
 
 This is a simple PoC of a Model Context Protocol (MCP) server for [transformer.bee](https://github.com/enercity/edifact-bo4e-converter/), written in Python.
-Under the hood it uses [`python-mdc`](https://github.com/modelcontextprotocol/python-sdk) and [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py).
+Under the hood it uses [`python-mcp`](https://github.com/modelcontextprotocol/python-sdk) and [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py).
 
 ## Installation
 You can install the MCP server as Python package or pull the Docker image.
