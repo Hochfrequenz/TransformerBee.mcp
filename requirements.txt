@@ -137,6 +137,7 @@ starlette==0.50.0
     # via mcp
 transformerbeeclient==0.2.4
     # via transformerbeemcp (pyproject.toml)
+typer==0.20.0
     # via mcp
 typing-extensions==4.15.0
     # via
