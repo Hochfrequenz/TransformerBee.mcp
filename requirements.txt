@@ -36,7 +36,7 @@ colorama==0.4.6
     # via click
 efoli==2.0.0
     # via transformerbeeclient
-frozenlist==1.7.0
+frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
