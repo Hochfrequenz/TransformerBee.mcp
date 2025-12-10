@@ -27,9 +27,9 @@ _ALLOWED_ORIGINS = os.getenv(
     "http://localhost:5173,https://nice-mushroom-04ebea203.3.azurestaticapps.net,https://thankful-water-00644131e.3.azurestaticapps.net",
 ).split(",")
 
-# Rate limiting: requests per minute per user
-RATE_LIMIT = int(os.getenv("RATE_LIMIT", "10"))
-RATE_WINDOW = int(os.getenv("RATE_WINDOW", "60"))  # seconds
+# Rate limiting configuration (module-private)
+_RATE_LIMIT = int(os.getenv("RATE_LIMIT", "10"))
+_RATE_WINDOW_SECONDS = int(os.getenv("RATE_WINDOW_SECONDS", "60"))
 rate_limit_store: dict[str, list[float]] = defaultdict(list)
 
 app = FastAPI(
@@ -80,13 +80,13 @@ def check_rate_limit(user_id: str) -> None:
     """Check if user has exceeded rate limit."""
     now = time()
     # Remove old entries outside the window
-    rate_limit_store[user_id] = [t for t in rate_limit_store[user_id] if now - t < RATE_WINDOW]
+    _rate_limit_store[user_id] = [t for t in _rate_limit_store[user_id] if now - t < _RATE_WINDOW_SECONDS]
 
-    if len(rate_limit_store[user_id]) >= RATE_LIMIT:
+    if len(_rate_limit_store[user_id]) >= _RATE_LIMIT:
         _logger.warning("Rate limit exceeded for user %s", user_id)
-        raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Max {RATE_LIMIT} requests per minute.")
+        raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Max {_RATE_LIMIT} requests per minute.")
 
-    rate_limit_store[user_id].append(now)
+    _rate_limit_store[user_id].append(now)
 
 
 class SummarizeRequest(BaseModel):

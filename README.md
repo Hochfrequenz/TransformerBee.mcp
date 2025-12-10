@@ -30,8 +30,8 @@ All environment variables used by this package:
 | `AUTH0_DOMAIN` | Auth0 domain for JWT verification | `hochfrequenz.eu.auth0.com` | No |
 | `AUTH0_AUDIENCE` | Auth0 API audience identifier | `https://transformer.bee` | No |
 | `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | `http://localhost:5173,...` | No |
-| `RATE_LIMIT` | Max requests per user per minute | `10` | No |
-| `RATE_WINDOW` | Rate limit window in seconds | `60` | No |
+| `RATE_LIMIT` | Max requests per user per window | `10` | No |
+| `RATE_WINDOW_SECONDS` | Rate limit window duration | `60` | No |
 | `PORT` | REST API server port | `8080` | No |
 | `HOST` | REST API server host | `0.0.0.0` | No |
 
