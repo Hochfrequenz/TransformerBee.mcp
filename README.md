@@ -1,7 +1,9 @@
 # TransformerBee.MCP
 
-This is a Model Context Protocol (MCP) server and REST API for [transformer.bee](https://github.com/enercity/edifact-bo4e-converter/), written in Python.
-Under the hood it uses [`python-mcp`](https://github.com/modelcontextprotocol/python-sdk) and [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py).
+This is a Model Context Protocol (MCP) server and REST API
+for [transformer.bee](https://github.com/enercity/edifact-bo4e-converter/), written in Python.
+Under the hood it uses [`python-mcp`](https://github.com/modelcontextprotocol/python-sdk) and [
+`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py).
 
 ## Features
 
@@ -15,35 +17,38 @@ All environment variables used by this package:
 
 ### MCP Server & Transformer.bee Client
 
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `TRANSFORMERBEE_HOST` | URL of the transformer.bee backend | - | **Yes** |
-| `TRANSFORMERBEE_CLIENT_ID` | OAuth client ID for authenticated requests | - | No |
-| `TRANSFORMERBEE_CLIENT_SECRET` | OAuth client secret | - | No |
+| Variable                       | Description                                | Default | Required |
+|--------------------------------|--------------------------------------------|---------|----------|
+| `TRANSFORMERBEE_HOST`          | URL of the transformer.bee backend         | -       | **Yes**  |
+| `TRANSFORMERBEE_CLIENT_ID`     | OAuth client ID for authenticated requests | -       | No       |
+| `TRANSFORMERBEE_CLIENT_SECRET` | OAuth client secret                        | -       | No       |
 
 ### REST API (Summarization)
 
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `OLLAMA_HOST` | URL of the Ollama instance | `http://localhost:11434` | No |
-| `OLLAMA_MODEL` | LLM model to use for summarization | `llama3` | No |
-| `AUTH0_DOMAIN` | Auth0 domain for JWT verification | `hochfrequenz.eu.auth0.com` | No |
-| `AUTH0_AUDIENCE` | Auth0 API audience identifier | `https://transformer.bee` | No |
-| `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | `http://localhost:5173,...` | No |
-| `RATE_LIMIT` | Max requests per user per window | `10` | No |
-| `RATE_WINDOW_SECONDS` | Rate limit window duration | `60` | No |
-| `PORT` | REST API server port | `8080` | No |
-| `HOST` | REST API server host | `0.0.0.0` | No |
+| Variable              | Description                            | Default                     | Required |
+|-----------------------|----------------------------------------|-----------------------------|----------|
+| `OLLAMA_HOST`         | URL of the Ollama instance             | `http://localhost:11434`    | No       |
+| `OLLAMA_MODEL`        | LLM model to use for summarization     | `llama3`                    | No       |
+| `AUTH0_DOMAIN`        | Auth0 domain for JWT verification      | `hochfrequenz.eu.auth0.com` | No       |
+| `AUTH0_AUDIENCE`      | Auth0 API audience identifier          | `https://transformer.bee`   | No       |
+| `ALLOWED_ORIGINS`     | CORS allowed origins (comma-separated) | `http://localhost:5173,...` | No       |
+| `RATE_LIMIT`          | Max requests per user per window       | `10`                        | No       |
+| `RATE_WINDOW_SECONDS` | Rate limit window duration             | `60`                        | No       |
+| `PORT`                | REST API server port                   | `8080`                      | No       |
+| `HOST`                | REST API server host                   | `0.0.0.0`                   | No       |
 
 ## Installation
 
 You can install the MCP server as Python package or pull the Docker image.
 
 ### Install as Python Package
+
 ```shell
 uv install transformerbeemcp
 ```
+
 or if you are using `pip`:
+
 ```sh
 pip install transformerbeemcp
 ```
@@ -52,12 +57,13 @@ pip install transformerbeemcp
 
 There are two Dockerfiles for different use cases:
 
-| Dockerfile | Purpose | Use Case |
-|------------|---------|----------|
-| `Dockerfile` | REST API server (FastAPI) | Web apps calling `/summarize` endpoint |
-| `Dockerfile.mcp` | MCP server (stdio) | AI assistants like Claude Desktop |
+| Dockerfile       | Purpose                   | Use Case                               |
+|------------------|---------------------------|----------------------------------------|
+| `Dockerfile`     | REST API server (FastAPI) | Web apps calling `/summarize` endpoint |
+| `Dockerfile.mcp` | MCP server (stdio)        | AI assistants like Claude Desktop      |
 
 **Build locally:**
+
 ```sh
 # Build REST API image
 docker build -t transformerbee-rest -f Dockerfile .
@@ -67,6 +73,7 @@ docker build -t transformerbee-mcp -f Dockerfile.mcp .
 ```
 
 **Or pull from GHCR:**
+
 ```sh
 # REST API (default)
 docker pull ghcr.io/hochfrequenz/transformerbee.mcp:latest
@@ -78,6 +85,7 @@ docker pull ghcr.io/hochfrequenz/transformerbee.mcp-mcp:latest
 ## MCP Server
 
 ### Start via CLI
+
 In a terminal **inside the virtual environment** where you installed the package:
 
 ```sh
@@ -85,6 +93,7 @@ In a terminal **inside the virtual environment** where you installed the package
 ```
 
 ### Start via Docker
+
 ```sh
 docker run --network host -i --rm \
   -e TRANSFORMERBEE_HOST=http://localhost:5021 \
@@ -94,13 +103,17 @@ docker run --network host -i --rm \
 ### Register in Claude Desktop
 
 #### If you checked out this repository
+
 ```sh
 cd path/to/reporoot/src/transformerbeemcp
 mcp install server.py
 ```
 
 #### If you installed the package via pip/uv
-Modify your `claude_desktop_config.json` (found in Claude Desktop menu via "Datei > Einstellungen > Entwickler > Konfiguration bearbeiten"):
+
+Modify your `claude_desktop_config.json` (found in Claude Desktop menu via "Datei > Einstellungen > Entwickler >
+Konfiguration bearbeiten"):
+
 ```json
 {
   "mcpServers": {
@@ -116,13 +129,18 @@ Modify your `claude_desktop_config.json` (found in Claude Desktop menu via "Date
   }
 }
 ```
-where `C:\github\MyProject\.myvenv` is the path to your virtual environment and `localhost:5021` exposes transformer.bee running in a docker container.
 
-Note that this package marks `uv` as a dev-dependency, so you might need to install it `pip install transformerbeempc[dev]` as a lot of MCP tooling assumes you have `uv` installed.
+where `C:\github\MyProject\.myvenv` is the path to your virtual environment and `localhost:5021` exposes transformer.bee
+running in a docker container.
 
-For details about the environment variables and/or starting transformer.bee locally, check [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py) docs.
+Note that this package marks `uv` as a dev-dependency, so you might need to install it
+`pip install transformerbeempc[dev]` as a lot of MCP tooling assumes you have `uv` installed.
+
+For details about the environment variables and/or starting transformer.bee locally, check [
+`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py) docs.
 
 #### If you installed the package via Docker
+
 ```json
 {
   "mcpServers": {
@@ -147,20 +165,24 @@ For details about the environment variables and/or starting transformer.bee loca
   }
 }
 ```
+
 I'm aware that using the `--network host` option is a bit hacky and not best practice.
 
 ## REST API for EDIFACT Summarization
 
-The package also includes a REST API that uses a local LLM (Ollama) to generate human-readable German summaries of EDIFACT messages.
+The package also includes a REST API that uses a local LLM (Ollama) to generate human-readable German summaries of
+EDIFACT messages.
 
 ### Start the REST API Server
 
 #### Via CLI
+
 ```sh
 (myvenv) run-transformerbee-rest-api
 ```
 
 #### Via Docker
+
 ```sh
 docker run -p 8080:8080 \
   -e OLLAMA_HOST=http://host.docker.internal:11434 \
@@ -183,11 +205,13 @@ flowchart LR
 ```
 
 **Services:**
+
 - `summarizer`: The REST API container (from `Dockerfile`)
 - `ollama`: Local LLM server running Llama 3
 - `ollama-init`: One-time init container to pull the model
 
 **Usage:**
+
 ```sh
 # Start the services
 docker-compose up -d
@@ -207,9 +231,11 @@ The summarizer connects to Ollama via the internal Docker network (`http://ollam
 ### API Endpoints
 
 #### `POST /summarize`
+
 Generate a German summary of an EDIFACT message.
 
 **Request:**
+
 ```json
 {
   "edifact": "UNB+UNOC:3+9904321000019:500+9900123000003:500+241210:1245+ABC123456789++TL'"
@@ -217,6 +243,7 @@ Generate a German summary of an EDIFACT message.
 ```
 
 **Response:**
+
 ```json
 {
   "summary": "Dies ist eine Zählerstandsmeldung vom Lieferanten (GLN: 9904321000019) an den Netzbetreiber..."
@@ -228,9 +255,11 @@ Generate a German summary of an EDIFACT message.
 **Rate Limiting:** 10 requests per minute per user (configurable via `RATE_LIMIT` env var).
 
 #### `GET /health`
+
 Health check endpoint (no authentication required). Verifies Ollama connectivity and model availability.
 
 **Response (healthy):**
+
 ```json
 {
   "status": "healthy",
@@ -243,6 +272,7 @@ Health check endpoint (no authentication required). Verifies Ollama connectivity
 ```
 
 **Response (unhealthy - Ollama not reachable):**
+
 ```json
 {
   "status": "unhealthy",
@@ -255,6 +285,7 @@ Health check endpoint (no authentication required). Verifies Ollama connectivity
 ```
 
 **Response (unhealthy - model not found):**
+
 ```json
 {
   "status": "unhealthy",
@@ -300,16 +331,18 @@ flowchart TB
 ```
 
 **Recommended setup:**
+
 1. Deploy `ollama` with a persistent volume for model storage
 2. Deploy `summarizer` (this package's REST API) pointing to Ollama
 3. Configure `marktnachrichten-dolmetscher` to call both:
-   - `transformer.bee` for EDIFACT↔BO4E conversion
-   - `summarizer` for human-readable summaries
+    - `transformer.bee` for EDIFACT↔BO4E conversion
+    - `summarizer` for human-readable summaries
 
 **Auth0 integration:** The summarizer uses the same Auth0 audience (`https://transformer.bee`) as transformer.bee.
 Clients already authenticated with transformer.bee can reuse their tokens—no additional Auth0 configuration needed.
 
 **Environment variables for production:**
+
 ```sh
 # Required for summarizer
 OLLAMA_HOST=http://ollama:11434  # Internal Docker network
