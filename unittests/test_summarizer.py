@@ -20,7 +20,7 @@ import httpx
 import pytest
 
 import transformerbeemcp.summarizer
-from transformerbeemcp.summarizer import _SYSTEM_PROMPT, OllamaHealthStatus
+from transformerbeemcp.summarizer import _SYSTEM_PROMPT
 
 
 @pytest.fixture
@@ -124,11 +124,13 @@ async def test_check_ollama_health_success() -> None:
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
 
+        # Import both function and class together to ensure they're from the same module state
+        from transformerbeemcp.summarizer import OllamaHealthStatus as HealthStatus
         from transformerbeemcp.summarizer import check_ollama_health
 
         result = await check_ollama_health()
 
-        assert isinstance(result, OllamaHealthStatus)
+        assert isinstance(result, HealthStatus)
         assert result.ollama_reachable is True
         assert result.model_available is True
         assert result.error is None
@@ -152,11 +154,13 @@ async def test_check_ollama_health_model_not_found() -> None:
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
 
+        # Import both function and class together to ensure they're from the same module state
+        from transformerbeemcp.summarizer import OllamaHealthStatus as HealthStatus
         from transformerbeemcp.summarizer import check_ollama_health
 
         result = await check_ollama_health()
 
-        assert isinstance(result, OllamaHealthStatus)
+        assert isinstance(result, HealthStatus)
         assert result.ollama_reachable is True
         assert result.model_available is False
         assert result.error is not None
@@ -172,11 +176,13 @@ async def test_check_ollama_health_connection_error() -> None:
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
 
+        # Import both function and class together to ensure they're from the same module state
+        from transformerbeemcp.summarizer import OllamaHealthStatus as HealthStatus
         from transformerbeemcp.summarizer import check_ollama_health
 
         result = await check_ollama_health()
 
-        assert isinstance(result, OllamaHealthStatus)
+        assert isinstance(result, HealthStatus)
         assert result.ollama_reachable is False
         assert result.model_available is False
         assert result.error is not None
