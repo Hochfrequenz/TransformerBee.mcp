@@ -1,5 +1,6 @@
 # Dockerfile for REST API (default)
 # For MCP server, use Dockerfile.mcp instead
+# Tested: Docker build succeeds with Python 3.14-slim
 
 FROM python:3.14-slim
 LABEL authors="Hochfrequenz Unternehmensberatung GmbH"

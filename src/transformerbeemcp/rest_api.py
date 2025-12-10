@@ -17,6 +17,9 @@ from transformerbeemcp.summarizer import summarize_edifact
 _logger = logging.getLogger(__name__)
 
 # Auth0 configuration (module-private, not intended for external import)
+# Uses the same Auth0 tenant and audience as transformer.bee, allowing clients
+# (e.g., marktnachrichten-dolmetscher) to reuse their existing access tokens
+# for both transformer.bee API and this summarization endpoint.
 _AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN", "hochfrequenz.eu.auth0.com")
 _AUTH0_AUDIENCE = os.getenv("AUTH0_AUDIENCE", "https://transformer.bee")
 _JWKS_URL = f"https://{_AUTH0_DOMAIN}/.well-known/jwks.json"
