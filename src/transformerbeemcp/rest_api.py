@@ -12,7 +12,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import PyJWKClient
 from pydantic import BaseModel
 
-from .summarizer import summarize_edifact
+from transformerbeemcp.summarizer import summarize_edifact
 
 _logger = logging.getLogger(__name__)
 

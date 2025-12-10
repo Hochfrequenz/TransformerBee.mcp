@@ -18,7 +18,7 @@ from transformerbeeclient import (
     UnauthenticatedTransformerBeeClient,
 )
 
-from .summarizer import summarize_edifact
+from transformerbeemcp.summarizer import summarize_edifact
 
 _logger = logging.getLogger(__name__)
 
