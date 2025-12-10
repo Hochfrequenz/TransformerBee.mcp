@@ -28,16 +28,19 @@ _AUTH0_AUDIENCE = os.getenv("AUTH0_AUDIENCE", "https://transformer.bee")
 _JWKS_URL = f"https://{_AUTH0_DOMAIN}/.well-known/jwks.json"
 
 # CORS configuration (module-private)
-_ALLOWED_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:5173,https://nice-mushroom-04ebea203.3.azurestaticapps.net,https://thankful-water-00644131e.3.azurestaticapps.net",
-).split(",")
+_DEFAULT_ORIGINS = (
+    "http://localhost:5173,"
+    "https://nice-mushroom-04ebea203.3.azurestaticapps.net,"
+    "https://thankful-water-00644131e.3.azurestaticapps.net"
+)
+_ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", _DEFAULT_ORIGINS).split(",")
 
 # Rate limiting configuration (module-private)
 _RATE_LIMIT = int(os.getenv("RATE_LIMIT", "10"))
 _RATE_WINDOW_SECONDS = int(os.getenv("RATE_WINDOW_SECONDS", "60"))
 # Maps user_id (from JWT 'sub' claim) -> list of request timestamps (UTC datetime)
 _rate_limit_store: dict[str, list[datetime]] = defaultdict(list)
+
 
 def _get_version() -> str:
     """Get version from package metadata."""
@@ -63,15 +66,15 @@ app.add_middleware(
 )
 
 security = HTTPBearer()
-jwks_client: PyJWKClient | None = None
+_JWKS_CLIENT: PyJWKClient | None = None
 
 
-def get_jwks_client() -> PyJWKClient:
+def _get_jwks_client() -> PyJWKClient:
     """Lazy initialization of JWKS client."""
-    global jwks_client  # pylint: disable=global-statement
-    if jwks_client is None:
-        jwks_client = PyJWKClient(_JWKS_URL)
-    return jwks_client
+    global _JWKS_CLIENT  # pylint: disable=global-statement
+    if _JWKS_CLIENT is None:
+        _JWKS_CLIENT = PyJWKClient(_JWKS_URL)
+    return _JWKS_CLIENT
 
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict[str, Any]:
@@ -88,7 +91,7 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
     """
     token = credentials.credentials
     try:
-        signing_key = get_jwks_client().get_signing_key_from_jwt(token)
+        signing_key = _get_jwks_client().get_signing_key_from_jwt(token)
         payload: dict[str, Any] = jwt.decode(
             token,
             signing_key.key,
@@ -152,7 +155,9 @@ class ErrorResponse(BaseModel):
         500: {"model": ErrorResponse, "description": "Summarization failed"},
     },
 )
-async def summarize(request: SummarizeRequest, token_payload: dict[str, Any] = Depends(verify_token)) -> SummarizeResponse:
+async def summarize(
+    request: SummarizeRequest, token_payload: dict[str, Any] = Depends(verify_token)
+) -> SummarizeResponse:
     """
     Generate a German summary of an EDIFACT message.
 
@@ -177,15 +182,10 @@ async def summarize(request: SummarizeRequest, token_payload: dict[str, Any] = D
         raise HTTPException(status_code=500, detail=f"Ollama request timed out: {e}") from e
 
 
-class HealthResponse(BaseModel):
-    """Health check response body."""
+class HealthResponse(OllamaHealthStatus):
+    """Health check response body extending OllamaHealthStatus with overall status."""
 
     status: str
-    ollama_host: str
-    ollama_reachable: bool
-    model: str
-    model_available: bool
-    error: str | None = None
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -217,7 +217,7 @@ def main() -> None:
     This is used by the `run-transformerbee-rest-api` console script (defined in pyproject.toml).
     Docker uses `fastapi run` instead, which directly imports the `app` object.
     """
-    import uvicorn
+    import uvicorn  # pylint: disable=import-outside-toplevel
 
     port = int(os.getenv("PORT", "8080"))
     host = os.getenv("HOST", "0.0.0.0")

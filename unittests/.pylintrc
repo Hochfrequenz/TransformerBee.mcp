@@ -7,5 +7,8 @@ disable =
     R0903,  # disable too-few-public-methods
     W0621,  # disable redefined-outer-name (this is for the use of pytest fixtures)
     R0801,  # disable duplicate-code (we prefer our test to be explicit rather than perfectly redundancy free)
+    C0413,  # disable wrong-import-position (pytest.importorskip requires imports after it)
+    C0415,  # disable import-outside-toplevel (tests often need to import after env var setup)
+    W0613,  # disable unused-argument (fixtures may be used for side effects)
 [pylint."MESSAGES CONTROL"]
 max-line-length = 120

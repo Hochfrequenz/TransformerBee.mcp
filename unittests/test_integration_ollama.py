@@ -4,22 +4,24 @@ These tests require Docker to be running and can be slow (need to pull model).
 To run: tox -e tests
 """
 
+from typing import Generator
+
 import pytest
 
 # testcontainers is an optional dependency - skip tests if not installed
 pytest.importorskip("testcontainers")
-from testcontainers.ollama import OllamaContainer
+from testcontainers.ollama import OllamaContainer  # type: ignore[import-untyped]
 
 from transformerbeemcp.rest_api import HealthResponse
 
 
 @pytest.fixture
-def anyio_backend():
+def anyio_backend() -> str:
     return "asyncio"
 
 
 @pytest.fixture(scope="module")
-def ollama_container():
+def ollama_container() -> Generator[OllamaContainer, None, None]:
     """Start Ollama container and pull a small model for testing."""
     # Use tinyllama for faster tests (smaller model)
     with OllamaContainer("ollama/ollama:latest") as container:
@@ -29,20 +31,20 @@ def ollama_container():
 
 
 @pytest.fixture(scope="module")
-def ollama_host(ollama_container):
+def ollama_host(ollama_container: OllamaContainer) -> str:
     """Get the Ollama host URL from the container."""
-    return ollama_container.get_endpoint()
+    return ollama_container.get_endpoint()  # type: ignore[no-any-return]
 
 
 @pytest.fixture
-def set_ollama_env(ollama_host, monkeypatch):
+def set_ollama_env(ollama_host: str, monkeypatch: pytest.MonkeyPatch) -> None:
     """Set environment variables for Ollama."""
     monkeypatch.setenv("OLLAMA_HOST", ollama_host)
     monkeypatch.setenv("OLLAMA_MODEL", "tinyllama")
 
 
 @pytest.mark.anyio
-async def test_check_ollama_health_with_container(set_ollama_env):
+async def test_check_ollama_health_with_container(set_ollama_env: None) -> None:
     """Test that health check works with real Ollama container."""
     # Import after setting env vars
     from transformerbeemcp.summarizer import check_ollama_health
@@ -55,7 +57,7 @@ async def test_check_ollama_health_with_container(set_ollama_env):
 
 
 @pytest.mark.anyio
-async def test_check_ollama_health_model_not_found(ollama_host, monkeypatch):
+async def test_check_ollama_health_model_not_found(ollama_host: str, monkeypatch: pytest.MonkeyPatch) -> None:
     """Test health check when model is not available."""
     monkeypatch.setenv("OLLAMA_HOST", ollama_host)
     monkeypatch.setenv("OLLAMA_MODEL", "nonexistent-model-12345")
@@ -77,7 +79,7 @@ async def test_check_ollama_health_model_not_found(ollama_host, monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_summarize_edifact_with_container(set_ollama_env):
+async def test_summarize_edifact_with_container(set_ollama_env: None) -> None:
     """Test actual EDIFACT summarization with real Ollama container."""
     # Import after setting env vars
     import importlib
@@ -98,7 +100,7 @@ async def test_summarize_edifact_with_container(set_ollama_env):
     assert len(summary) > 0
 
 
-def test_health_endpoint_with_container(set_ollama_env):
+def test_health_endpoint_with_container(set_ollama_env: None) -> None:
     """Test REST API health endpoint with real Ollama container."""
     import importlib
 

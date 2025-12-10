@@ -18,6 +18,7 @@ class OllamaHealthStatus(BaseModel):
     model_available: bool
     error: str | None = None
 
+
 # Ollama configuration (module-private, not intended for external import)
 _OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 _OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
@@ -65,7 +66,8 @@ async def check_ollama_health(timeout: float = 5.0) -> OllamaHealthStatus:
     except httpx.HTTPStatusError as e:
         ollama_reachable = True  # It responded, just with an error
         error = f"Ollama returned error: {e.response.status_code}"
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        # Catch any unexpected errors to ensure health check always returns a valid response
         error = f"Unexpected error: {e}"
 
     return OllamaHealthStatus(
@@ -106,6 +108,6 @@ async def summarize_edifact(edifact: str, timeout: float = 120.0) -> str:
         )
         response.raise_for_status()
         result = response.json()
-        summary = result["response"]
+        summary: str = result["response"]
         _logger.debug("Generated summary: %s", summary[:100] + "..." if len(summary) > 100 else summary)
         return summary

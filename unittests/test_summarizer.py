@@ -1,18 +1,20 @@
 """Tests for EDIFACT summarization."""
 
-import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from transformerbeemcp.summarizer import OllamaHealthStatus, check_ollama_health, summarize_edifact, _SYSTEM_PROMPT
+import httpx
+import pytest
+
+from transformerbeemcp.summarizer import _SYSTEM_PROMPT, OllamaHealthStatus, check_ollama_health, summarize_edifact
 
 
 @pytest.fixture
-def anyio_backend():
+def anyio_backend() -> str:
     return "asyncio"
 
 
 @pytest.mark.anyio
-async def test_summarize_edifact_success():
+async def test_summarize_edifact_success() -> None:
     """Test successful summarization."""
     mock_response = MagicMock()
     mock_response.json.return_value = {"response": "Dies ist eine Testzusammenfassung."}
@@ -37,10 +39,8 @@ async def test_summarize_edifact_success():
 
 
 @pytest.mark.anyio
-async def test_summarize_edifact_http_error():
+async def test_summarize_edifact_http_error() -> None:
     """Test handling of HTTP errors from Ollama."""
-    import httpx
-
     mock_client = AsyncMock()
     mock_client.post.side_effect = httpx.HTTPStatusError(
         "Internal Server Error",
@@ -56,10 +56,8 @@ async def test_summarize_edifact_http_error():
 
 
 @pytest.mark.anyio
-async def test_summarize_edifact_connection_error():
+async def test_summarize_edifact_connection_error() -> None:
     """Test handling of connection errors to Ollama."""
-    import httpx
-
     mock_client = AsyncMock()
     mock_client.post.side_effect = httpx.ConnectError("Connection refused")
 
@@ -71,7 +69,7 @@ async def test_summarize_edifact_connection_error():
 
 
 @pytest.mark.anyio
-async def test_check_ollama_health_success():
+async def test_check_ollama_health_success() -> None:
     """Test health check when Ollama is reachable and model is available."""
     mock_response = MagicMock()
     mock_response.json.return_value = {
@@ -98,7 +96,7 @@ async def test_check_ollama_health_success():
 
 
 @pytest.mark.anyio
-async def test_check_ollama_health_model_not_found():
+async def test_check_ollama_health_model_not_found() -> None:
     """Test health check when model is not available."""
     mock_response = MagicMock()
     mock_response.json.return_value = {
@@ -124,10 +122,8 @@ async def test_check_ollama_health_model_not_found():
 
 
 @pytest.mark.anyio
-async def test_check_ollama_health_connection_error():
+async def test_check_ollama_health_connection_error() -> None:
     """Test health check when Ollama is not reachable."""
-    import httpx
-
     mock_client = AsyncMock()
     mock_client.get.side_effect = httpx.ConnectError("Connection refused")
 
