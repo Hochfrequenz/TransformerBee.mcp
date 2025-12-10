@@ -3,8 +3,11 @@
 import logging
 import os
 from collections import defaultdict
-from time import time
+from datetime import datetime, timedelta, timezone
+from importlib.metadata import PackageNotFoundError, version
+from typing import Any
 
+import httpx
 import jwt
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,19 +36,14 @@ _ALLOWED_ORIGINS = os.getenv(
 # Rate limiting configuration (module-private)
 _RATE_LIMIT = int(os.getenv("RATE_LIMIT", "10"))
 _RATE_WINDOW_SECONDS = int(os.getenv("RATE_WINDOW_SECONDS", "60"))
-# Maps user_id (from JWT 'sub' claim) -> list of request timestamps (seconds since epoch)
-_rate_limit_store: dict[str, list[float]] = defaultdict(list)
-# Note: Using float for timestamps (time.time() returns float) rather than Decimal,
-# as sub-second precision is sufficient for rate limiting and Decimal would add
-# unnecessary complexity and overhead for this use case.
+# Maps user_id (from JWT 'sub' claim) -> list of request timestamps (UTC datetime)
+_rate_limit_store: dict[str, list[datetime]] = defaultdict(list)
 
 def _get_version() -> str:
-    """Get version from package metadata or version file."""
+    """Get version from package metadata."""
     try:
-        from importlib.metadata import version
-
         return version("transformerbeemcp")
-    except Exception:
+    except PackageNotFoundError:
         # Fallback for development or when package is not installed
         return "0.0.0-dev"
 
@@ -76,12 +74,22 @@ def get_jwks_client() -> PyJWKClient:
     return jwks_client
 
 
-async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
-    """Verify Auth0 JWT token."""
+async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict[str, Any]:
+    """
+    Verify Auth0 JWT token.
+
+    Returns:
+        JWT payload dict containing at minimum:
+        - sub: str - Subject identifier (user ID)
+        - aud: str | list[str] - Audience claim
+        - iss: str - Issuer URL
+        - exp: int - Expiration timestamp
+        - iat: int - Issued at timestamp
+    """
     token = credentials.credentials
     try:
         signing_key = get_jwks_client().get_signing_key_from_jwt(token)
-        payload = jwt.decode(
+        payload: dict[str, Any] = jwt.decode(
             token,
             signing_key.key,
             algorithms=["RS256"],
@@ -96,9 +104,10 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
 
 def check_rate_limit(user_id: str) -> None:
     """Check if user has exceeded rate limit."""
-    now = time()
+    now = datetime.now(timezone.utc)
+    window_start = now - timedelta(seconds=_RATE_WINDOW_SECONDS)
     # Remove old entries outside the window
-    _rate_limit_store[user_id] = [t for t in _rate_limit_store[user_id] if now - t < _RATE_WINDOW_SECONDS]
+    _rate_limit_store[user_id] = [t for t in _rate_limit_store[user_id] if t > window_start]
 
     if len(_rate_limit_store[user_id]) >= _RATE_LIMIT:
         _logger.warning("Rate limit exceeded for user %s", user_id)
@@ -135,7 +144,7 @@ class ErrorResponse(BaseModel):
         500: {"model": ErrorResponse, "description": "Summarization failed"},
     },
 )
-async def summarize(request: SummarizeRequest, token_payload: dict = Depends(verify_token)) -> SummarizeResponse:
+async def summarize(request: SummarizeRequest, token_payload: dict[str, Any] = Depends(verify_token)) -> SummarizeResponse:
     """
     Generate a German summary of an EDIFACT message.
 
@@ -149,9 +158,15 @@ async def summarize(request: SummarizeRequest, token_payload: dict = Depends(ver
     try:
         summary = await summarize_edifact(request.edifact)
         return SummarizeResponse(summary=summary)
-    except Exception as e:
-        _logger.exception("Error during summarization")
-        raise HTTPException(status_code=500, detail=str(e)) from e
+    except httpx.HTTPStatusError as e:
+        _logger.exception("Ollama returned error status")
+        raise HTTPException(status_code=500, detail=f"Ollama error: {e.response.status_code}") from e
+    except httpx.ConnectError as e:
+        _logger.exception("Cannot connect to Ollama")
+        raise HTTPException(status_code=500, detail=f"Cannot connect to Ollama: {e}") from e
+    except httpx.TimeoutException as e:
+        _logger.exception("Ollama request timed out")
+        raise HTTPException(status_code=500, detail=f"Ollama request timed out: {e}") from e
 
 
 class HealthResponse(BaseModel):

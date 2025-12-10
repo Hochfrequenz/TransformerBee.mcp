@@ -151,14 +151,16 @@ def test_summarize_rate_limit(client):
     app.dependency_overrides.clear()
 
 
-def test_summarize_error_handling(client):
-    """Test error handling when summarization fails."""
+def test_summarize_error_handling_connect_error(client):
+    """Test error handling when Ollama is not reachable."""
+    import httpx
+
     mock_payload = {"sub": "user789", "aud": "https://transformer.bee"}
 
     app.dependency_overrides[verify_token] = lambda: mock_payload
 
     with patch("transformerbeemcp.rest_api.summarize_edifact", new_callable=AsyncMock) as mock_summarize:
-        mock_summarize.side_effect = Exception("Ollama connection failed")
+        mock_summarize.side_effect = httpx.ConnectError("Connection refused")
 
         response = client.post(
             "/summarize",
@@ -167,7 +169,30 @@ def test_summarize_error_handling(client):
         )
 
         assert response.status_code == 500
-        assert "Ollama connection failed" in response.json()["detail"]
+        assert "Cannot connect to Ollama" in response.json()["detail"]
+
+    app.dependency_overrides.clear()
+
+
+def test_summarize_error_handling_timeout(client):
+    """Test error handling when Ollama times out."""
+    import httpx
+
+    mock_payload = {"sub": "user790", "aud": "https://transformer.bee"}
+
+    app.dependency_overrides[verify_token] = lambda: mock_payload
+
+    with patch("transformerbeemcp.rest_api.summarize_edifact", new_callable=AsyncMock) as mock_summarize:
+        mock_summarize.side_effect = httpx.TimeoutException("Request timed out")
+
+        response = client.post(
+            "/summarize",
+            json={"edifact": "UNB+..."},
+            headers={"Authorization": "Bearer valid_token"},
+        )
+
+        assert response.status_code == 500
+        assert "timed out" in response.json()["detail"]
 
     app.dependency_overrides.clear()
 

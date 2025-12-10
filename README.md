@@ -173,15 +173,13 @@ docker run -p 8080:8080 \
 
 The `docker-compose.yml` provides a complete setup for running the summarizer with a local Ollama instance:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    docker-compose                            │
-│  ┌─────────────────┐         ┌─────────────────────────┐   │
-│  │   summarizer    │────────▶│        ollama           │   │
-│  │   (REST API)    │         │   (Llama 3 model)       │   │
-│  │   Port 8080     │         │   Port 11434            │   │
-│  └─────────────────┘         └─────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph docker-compose
+        summarizer["summarizer<br/>(REST API)<br/>Port 8080"]
+        ollama["ollama<br/>(Llama 3 model)<br/>Port 11434"]
+        summarizer --> ollama
+    end
 ```
 
 **Services:**
@@ -290,24 +288,15 @@ docker run -d --name summarizer \
 
 If you control the deployment of **marktnachrichten-dolmetscher** and/or **transformer.bee**:
 
-```
-┌───────────────────────────────────────────────────────────────────────┐
-│                        Your Infrastructure                             │
-│                                                                        │
-│  ┌──────────────────────┐                                             │
-│  │ marktnachrichten-    │                                             │
-│  │ dolmetscher          │                                             │
-│  │ (Frontend)           │                                             │
-│  └─────────┬────────────┘                                             │
-│            │                                                           │
-│            ├─────────────────────┬──────────────────────┐             │
-│            ▼                     ▼                      ▼             │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐    │
-│  │ transformer.bee  │  │   summarizer     │  │     ollama       │    │
-│  │ (EDIFACT↔BO4E)   │  │   (REST API)     │──│   (Llama 3)      │    │
-│  │ Port: 5021       │  │   Port: 8080     │  │   Port: 11434    │    │
-│  └──────────────────┘  └──────────────────┘  └──────────────────┘    │
-└───────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph infra["Your Infrastructure"]
+        frontend["marktnachrichten-dolmetscher<br/>(Frontend)"]
+
+        frontend --> bee["transformer.bee<br/>(EDIFACT↔BO4E)<br/>Port: 5021"]
+        frontend --> summarizer["summarizer<br/>(REST API)<br/>Port: 8080"]
+        summarizer --> ollama["ollama<br/>(Llama 3)<br/>Port: 11434"]
+    end
 ```
 
 **Recommended setup:**
