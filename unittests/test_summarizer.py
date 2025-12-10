@@ -1,16 +1,47 @@
-"""Tests for EDIFACT summarization."""
+"""Tests for EDIFACT summarization.
+
+Note on test isolation:
+    The integration tests (test_integration_ollama.py) use importlib.reload() to reload
+    the summarizer module with different environment variables (OLLAMA_HOST, OLLAMA_MODEL).
+    This modifies the module-level constants _OLLAMA_HOST and _OLLAMA_MODEL which persist
+    across test runs within the same pytest session.
+
+    If integration tests run before these unit tests (alphabetical order: test_integration_*
+    comes before test_summarizer.*), the unit tests would see "tinyllama" instead of "llama3"
+    as the default model, causing assertion failures.
+
+    The reset_summarizer_module fixture below resets these constants to their default values
+    before each test to ensure test isolation regardless of execution order.
+"""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
 
-from transformerbeemcp.summarizer import _SYSTEM_PROMPT, OllamaHealthStatus, check_ollama_health, summarize_edifact
+import transformerbeemcp.summarizer
+from transformerbeemcp.summarizer import _SYSTEM_PROMPT, OllamaHealthStatus
 
 
 @pytest.fixture
 def anyio_backend() -> str:
     return "asyncio"
+
+
+@pytest.fixture(autouse=True)
+def reset_summarizer_module() -> None:
+    """Reset the summarizer module constants to default values before each test.
+
+    This ensures tests are isolated from side effects of integration tests that
+    may have reloaded the module with different env vars (e.g., OLLAMA_MODEL=tinyllama).
+
+    Without this fixture, tests would fail with assertions like:
+        AssertionError: assert 'tinyllama' == 'llama3'
+
+    because the integration tests modify module-level constants that persist across tests.
+    """
+    transformerbeemcp.summarizer._OLLAMA_HOST = "http://localhost:11434"
+    transformerbeemcp.summarizer._OLLAMA_MODEL = "llama3"
 
 
 @pytest.mark.anyio
@@ -25,6 +56,9 @@ async def test_summarize_edifact_success() -> None:
 
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
+
+        # Re-import to get the functions that use the reset module constants
+        from transformerbeemcp.summarizer import summarize_edifact
 
         result = await summarize_edifact("UNB+UNOC:3+...")
 
@@ -51,6 +85,8 @@ async def test_summarize_edifact_http_error() -> None:
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
 
+        from transformerbeemcp.summarizer import summarize_edifact
+
         with pytest.raises(httpx.HTTPStatusError):
             await summarize_edifact("UNB+UNOC:3+...")
 
@@ -63,6 +99,8 @@ async def test_summarize_edifact_connection_error() -> None:
 
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
+
+        from transformerbeemcp.summarizer import summarize_edifact
 
         with pytest.raises(httpx.ConnectError):
             await summarize_edifact("UNB+UNOC:3+...")
@@ -85,6 +123,8 @@ async def test_check_ollama_health_success() -> None:
 
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
+
+        from transformerbeemcp.summarizer import check_ollama_health
 
         result = await check_ollama_health()
 
@@ -112,6 +152,8 @@ async def test_check_ollama_health_model_not_found() -> None:
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
 
+        from transformerbeemcp.summarizer import check_ollama_health
+
         result = await check_ollama_health()
 
         assert isinstance(result, OllamaHealthStatus)
@@ -129,6 +171,8 @@ async def test_check_ollama_health_connection_error() -> None:
 
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
+
+        from transformerbeemcp.summarizer import check_ollama_health
 
         result = await check_ollama_health()
 

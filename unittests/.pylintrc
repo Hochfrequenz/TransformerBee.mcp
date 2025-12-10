@@ -10,5 +10,6 @@ disable =
     C0413,  # disable wrong-import-position (pytest.importorskip requires imports after it)
     C0415,  # disable import-outside-toplevel (tests often need to import after env var setup)
     W0613,  # disable unused-argument (fixtures may be used for side effects)
+    W0212,  # disable protected-access (tests may need to modify internal module state)
 [pylint."MESSAGES CONTROL"]
 max-line-length = 120
