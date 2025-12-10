@@ -36,10 +36,21 @@ _rate_limit_store: dict[str, list[float]] = defaultdict(list)
 # as sub-second precision is sufficient for rate limiting and Decimal would add
 # unnecessary complexity and overhead for this use case.
 
+def _get_version() -> str:
+    """Get version from package metadata or version file."""
+    try:
+        from importlib.metadata import version
+
+        return version("transformerbeemcp")
+    except Exception:
+        # Fallback for development or when package is not installed
+        return "0.0.0-dev"
+
+
 app = FastAPI(
     title="TransformerBee Summarizer",
     description="REST API for EDIFACT summarization using local LLM",
-    version="0.1.0",
+    version=_get_version(),
 )
 
 app.add_middleware(
