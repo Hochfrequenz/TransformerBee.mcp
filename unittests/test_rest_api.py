@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
 
-from transformerbeemcp.rest_api import app, rate_limit_store, verify_token
+from transformerbeemcp.rest_api import app, _rate_limit_store, verify_token
 
 
 @pytest.fixture
@@ -16,9 +16,9 @@ def client():
 @pytest.fixture(autouse=True)
 def clear_rate_limit_store():
     """Clear rate limit store before each test."""
-    rate_limit_store.clear()
+    _rate_limit_store.clear()
     yield
-    rate_limit_store.clear()
+    _rate_limit_store.clear()
 
 
 def test_health_endpoint(client):

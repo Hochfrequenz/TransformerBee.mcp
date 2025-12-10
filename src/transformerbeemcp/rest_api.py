@@ -30,7 +30,11 @@ _ALLOWED_ORIGINS = os.getenv(
 # Rate limiting configuration (module-private)
 _RATE_LIMIT = int(os.getenv("RATE_LIMIT", "10"))
 _RATE_WINDOW_SECONDS = int(os.getenv("RATE_WINDOW_SECONDS", "60"))
-rate_limit_store: dict[str, list[float]] = defaultdict(list)
+# Maps user_id (from JWT 'sub' claim) -> list of request timestamps (seconds since epoch)
+_rate_limit_store: dict[str, list[float]] = defaultdict(list)
+# Note: Using float for timestamps (time.time() returns float) rather than Decimal,
+# as sub-second precision is sufficient for rate limiting and Decimal would add
+# unnecessary complexity and overhead for this use case.
 
 app = FastAPI(
     title="TransformerBee Summarizer",
