@@ -170,13 +170,41 @@ docker run -p 8080:8080 \
 ```
 
 #### Via Docker Compose (with Ollama sidecar)
+
+The `docker-compose.yml` provides a complete setup for running the summarizer with a local Ollama instance:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    docker-compose                            │
+│  ┌─────────────────┐         ┌─────────────────────────┐   │
+│  │   summarizer    │────────▶│        ollama           │   │
+│  │   (REST API)    │         │   (Llama 3 model)       │   │
+│  │   Port 8080     │         │   Port 11434            │   │
+│  └─────────────────┘         └─────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Services:**
+- `summarizer`: The REST API container (from `Dockerfile`)
+- `ollama`: Local LLM server running Llama 3
+- `ollama-init`: One-time init container to pull the model
+
+**Usage:**
 ```sh
 # Start the services
 docker-compose up -d
 
 # Pull the LLM model (first time only)
 docker-compose run --rm --profile init ollama-init
+
+# Check logs
+docker-compose logs -f summarizer
+
+# Stop services
+docker-compose down
 ```
+
+The summarizer connects to Ollama via the internal Docker network (`http://ollama:11434`).
 
 ### API Endpoints
 
