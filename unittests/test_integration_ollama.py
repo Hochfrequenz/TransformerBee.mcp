@@ -46,7 +46,14 @@ def set_ollama_env(ollama_host: str, monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.anyio
 async def test_check_ollama_health_with_container(set_ollama_env: None) -> None:
     """Test that health check works with real Ollama container."""
-    # Import after setting env vars
+    # Need to reload the module to pick up the env vars set by set_ollama_env fixture.
+    # The module-level constants (_OLLAMA_HOST, _OLLAMA_MODEL) are evaluated at import time,
+    # so we must reload after the env vars are set.
+    import importlib
+
+    import transformerbeemcp.summarizer
+
+    importlib.reload(transformerbeemcp.summarizer)
     from transformerbeemcp.summarizer import check_ollama_health
 
     result = await check_ollama_health()
