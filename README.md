@@ -238,3 +238,73 @@ Health check endpoint (no authentication required).
   "status": "ok"
 }
 ```
+
+## Deployment Guide
+
+### Quickstart: Run as Sidecar
+
+The fastest way to run the summarization service alongside your existing setup:
+
+```sh
+# Start Ollama + pull model (one-time)
+docker run -d --name ollama -p 11434:11434 -v ollama_data:/root/.ollama ollama/ollama
+docker exec ollama ollama pull llama3
+
+# Start the summarizer
+docker run -d --name summarizer \
+  -p 8080:8080 \
+  -e OLLAMA_HOST=http://host.docker.internal:11434 \
+  ghcr.io/hochfrequenz/transformerbee.mcp:latest
+```
+
+### Production Deployment
+
+If you control the deployment of **marktnachrichten-dolmetscher** and/or **transformer.bee**:
+
+```
+┌───────────────────────────────────────────────────────────────────────┐
+│                        Your Infrastructure                             │
+│                                                                        │
+│  ┌──────────────────────┐                                             │
+│  │ marktnachrichten-    │                                             │
+│  │ dolmetscher          │                                             │
+│  │ (Frontend)           │                                             │
+│  └─────────┬────────────┘                                             │
+│            │                                                           │
+│            ├─────────────────────┬──────────────────────┐             │
+│            ▼                     ▼                      ▼             │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐    │
+│  │ transformer.bee  │  │   summarizer     │  │     ollama       │    │
+│  │ (EDIFACT↔BO4E)   │  │   (REST API)     │──│   (Llama 3)      │    │
+│  │ Port: 5021       │  │   Port: 8080     │  │   Port: 11434    │    │
+│  └──────────────────┘  └──────────────────┘  └──────────────────┘    │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+**Recommended setup:**
+1. Deploy `ollama` with a persistent volume for model storage
+2. Deploy `summarizer` (this package's REST API) pointing to Ollama
+3. Configure `marktnachrichten-dolmetscher` to call both:
+   - `transformer.bee` for EDIFACT↔BO4E conversion
+   - `summarizer` for human-readable summaries
+
+**Auth0 integration:** The summarizer uses the same Auth0 audience (`https://transformer.bee`) as transformer.bee.
+Clients already authenticated with transformer.bee can reuse their tokens—no additional Auth0 configuration needed.
+
+**Environment variables for production:**
+```sh
+# Required for summarizer
+OLLAMA_HOST=http://ollama:11434  # Internal Docker network
+OLLAMA_MODEL=llama3
+
+# Auth (defaults work if using same Auth0 tenant as transformer.bee)
+AUTH0_DOMAIN=hochfrequenz.eu.auth0.com
+AUTH0_AUDIENCE=https://transformer.bee
+
+# CORS (add your production frontend URLs)
+ALLOWED_ORIGINS=https://your-dolmetscher.example.com
+
+# Rate limiting (adjust as needed)
+RATE_LIMIT=10
+RATE_WINDOW_SECONDS=60
+```
