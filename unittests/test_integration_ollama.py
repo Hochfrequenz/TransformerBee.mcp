@@ -1,35 +1,16 @@
 """Integration tests for EDIFACT summarization using Ollama testcontainer.
 
 These tests require Docker to be running and can be slow (need to pull model).
-They are skipped by default in CI. To run:
-    SKIP_INTEGRATION_TESTS=false tox -e tests
+To run: tox -e tests
 """
-
-import os
 
 import pytest
 
+# testcontainers is an optional dependency - skip tests if not installed
+pytest.importorskip("testcontainers")
+from testcontainers.ollama import OllamaContainer
 
-# Try to import testcontainers - skip tests if not installed
-try:
-    from testcontainers.ollama import OllamaContainer
-
-    TESTCONTAINERS_AVAILABLE = True
-except ImportError:
-    TESTCONTAINERS_AVAILABLE = False
-    OllamaContainer = None  # type: ignore
-
-# Skip all tests in this module if testcontainers is not available or Docker is not running
-pytestmark = [
-    pytest.mark.skipif(
-        not TESTCONTAINERS_AVAILABLE,
-        reason="testcontainers not installed (install with: pip install transformerbeemcp[tests])",
-    ),
-    pytest.mark.skipif(
-        os.getenv("SKIP_INTEGRATION_TESTS", "true").lower() == "true",
-        reason="Integration tests skipped by default (set SKIP_INTEGRATION_TESTS=false to run)",
-    ),
-]
+from transformerbeemcp.rest_api import HealthResponse
 
 
 @pytest.fixture
@@ -40,9 +21,6 @@ def anyio_backend():
 @pytest.fixture(scope="module")
 def ollama_container():
     """Start Ollama container and pull a small model for testing."""
-    if not TESTCONTAINERS_AVAILABLE:
-        pytest.skip("testcontainers not available")
-
     # Use tinyllama for faster tests (smaller model)
     with OllamaContainer("ollama/ollama:latest") as container:
         # Pull tinyllama - much smaller than llama3
@@ -71,9 +49,9 @@ async def test_check_ollama_health_with_container(set_ollama_env):
 
     result = await check_ollama_health()
 
-    assert result["ollama_reachable"] is True
-    assert result["model_available"] is True
-    assert result["error"] is None
+    assert result.ollama_reachable is True
+    assert result.model_available is True
+    assert result.error is None
 
 
 @pytest.mark.anyio
@@ -92,9 +70,10 @@ async def test_check_ollama_health_model_not_found(ollama_host, monkeypatch):
 
     result = await check_ollama_health()
 
-    assert result["ollama_reachable"] is True
-    assert result["model_available"] is False
-    assert "not found" in result["error"].lower()
+    assert result.ollama_reachable is True
+    assert result.model_available is False
+    assert result.error is not None
+    assert "not found" in result.error.lower()
 
 
 @pytest.mark.anyio
@@ -141,7 +120,8 @@ def test_health_endpoint_with_container(set_ollama_env):
 
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "healthy"
-    assert data["ollama_reachable"] is True
-    assert data["model_available"] is True
-    assert data["error"] is None
+    health_response = HealthResponse.model_validate(data)
+    assert health_response.status == "healthy"
+    assert health_response.ollama_reachable is True
+    assert health_response.model_available is True
+    assert health_response.error is None

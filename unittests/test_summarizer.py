@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from transformerbeemcp.summarizer import check_ollama_health, summarize_edifact, _SYSTEM_PROMPT
+from transformerbeemcp.summarizer import OllamaHealthStatus, check_ollama_health, summarize_edifact, _SYSTEM_PROMPT
 
 
 @pytest.fixture
@@ -90,9 +90,10 @@ async def test_check_ollama_health_success():
 
         result = await check_ollama_health()
 
-        assert result["ollama_reachable"] is True
-        assert result["model_available"] is True
-        assert result["error"] is None
+        assert isinstance(result, OllamaHealthStatus)
+        assert result.ollama_reachable is True
+        assert result.model_available is True
+        assert result.error is None
         mock_client.get.assert_called_once()
 
 
@@ -115,9 +116,11 @@ async def test_check_ollama_health_model_not_found():
 
         result = await check_ollama_health()
 
-        assert result["ollama_reachable"] is True
-        assert result["model_available"] is False
-        assert "not found" in result["error"].lower()
+        assert isinstance(result, OllamaHealthStatus)
+        assert result.ollama_reachable is True
+        assert result.model_available is False
+        assert result.error is not None
+        assert "not found" in result.error.lower()
 
 
 @pytest.mark.anyio
@@ -133,7 +136,8 @@ async def test_check_ollama_health_connection_error():
 
         result = await check_ollama_health()
 
-        assert result["ollama_reachable"] is False
-        assert result["model_available"] is False
-        assert result["error"] is not None
-        assert "connect" in result["error"].lower()
+        assert isinstance(result, OllamaHealthStatus)
+        assert result.ollama_reachable is False
+        assert result.model_available is False
+        assert result.error is not None
+        assert "connect" in result.error.lower()

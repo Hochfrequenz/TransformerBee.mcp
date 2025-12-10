@@ -4,8 +4,19 @@ import logging
 import os
 
 import httpx
+from pydantic import BaseModel
 
 _logger = logging.getLogger(__name__)
+
+
+class OllamaHealthStatus(BaseModel):
+    """Health status of Ollama connection and model availability."""
+
+    ollama_host: str
+    ollama_reachable: bool
+    model: str
+    model_available: bool
+    error: str | None = None
 
 # Ollama configuration (module-private, not intended for external import)
 _OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
@@ -17,7 +28,7 @@ Erkläre den Nachrichtentyp, die beteiligten Parteien, und die wesentlichen Inha
 Antworte präzise und verständlich für Sachbearbeiter ohne EDIFACT-Kenntnisse."""
 
 
-async def check_ollama_health(timeout: float = 5.0) -> dict:
+async def check_ollama_health(timeout: float = 5.0) -> OllamaHealthStatus:
     """
     Check if Ollama is reachable and the configured model is available.
 
@@ -25,27 +36,18 @@ async def check_ollama_health(timeout: float = 5.0) -> dict:
         timeout: Request timeout in seconds
 
     Returns:
-        dict with keys:
-        - ollama_host: configured host URL
-        - ollama_reachable: bool
-        - model: configured model name
-        - model_available: bool
-        - error: error message if any check failed
+        OllamaHealthStatus with connection and model availability information
     """
-    result = {
-        "ollama_host": _OLLAMA_HOST,
-        "ollama_reachable": False,
-        "model": _OLLAMA_MODEL,
-        "model_available": False,
-        "error": None,
-    }
+    ollama_reachable = False
+    model_available = False
+    error: str | None = None
 
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
             # Check if Ollama is reachable via /api/tags endpoint
             response = await client.get(f"{_OLLAMA_HOST}/api/tags")
             response.raise_for_status()
-            result["ollama_reachable"] = True
+            ollama_reachable = True
 
             # Check if the configured model is available
             data = response.json()
@@ -54,19 +56,25 @@ async def check_ollama_health(timeout: float = 5.0) -> dict:
             available_models_full = [m.get("name", "") for m in data.get("models", [])]
 
             if _OLLAMA_MODEL in available_models or _OLLAMA_MODEL in available_models_full:
-                result["model_available"] = True
+                model_available = True
             else:
-                result["error"] = f"Model '{_OLLAMA_MODEL}' not found. Available: {available_models_full}"
+                error = f"Model '{_OLLAMA_MODEL}' not found. Available: {available_models_full}"
 
     except httpx.ConnectError as e:
-        result["error"] = f"Cannot connect to Ollama at {_OLLAMA_HOST}: {e}"
+        error = f"Cannot connect to Ollama at {_OLLAMA_HOST}: {e}"
     except httpx.HTTPStatusError as e:
-        result["ollama_reachable"] = True  # It responded, just with an error
-        result["error"] = f"Ollama returned error: {e.response.status_code}"
+        ollama_reachable = True  # It responded, just with an error
+        error = f"Ollama returned error: {e.response.status_code}"
     except Exception as e:
-        result["error"] = f"Unexpected error: {e}"
+        error = f"Unexpected error: {e}"
 
-    return result
+    return OllamaHealthStatus(
+        ollama_host=_OLLAMA_HOST,
+        ollama_reachable=ollama_reachable,
+        model=_OLLAMA_MODEL,
+        model_available=model_available,
+        error=error,
+    )
 
 
 async def summarize_edifact(edifact: str, timeout: float = 120.0) -> str:

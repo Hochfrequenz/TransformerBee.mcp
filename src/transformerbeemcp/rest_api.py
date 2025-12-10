@@ -15,7 +15,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import PyJWKClient
 from pydantic import BaseModel
 
-from transformerbeemcp.summarizer import check_ollama_health, summarize_edifact
+from transformerbeemcp.summarizer import OllamaHealthStatus, check_ollama_health, summarize_edifact
 
 _logger = logging.getLogger(__name__)
 
@@ -103,7 +103,15 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
 
 
 def check_rate_limit(user_id: str) -> None:
-    """Check if user has exceeded rate limit."""
+    """
+    Check if user has exceeded rate limit.
+
+    Args:
+        user_id: The user identifier (typically from JWT 'sub' claim)
+
+    Raises:
+        HTTPException: 429 status if rate limit is exceeded
+    """
     now = datetime.now(timezone.utc)
     window_start = now - timedelta(seconds=_RATE_WINDOW_SECONDS)
     # Remove old entries outside the window
@@ -190,20 +198,25 @@ async def health() -> HealthResponse:
     """
     ollama_status = await check_ollama_health()
 
-    is_healthy = ollama_status["ollama_reachable"] and ollama_status["model_available"]
+    is_healthy = ollama_status.ollama_reachable and ollama_status.model_available
 
     return HealthResponse(
         status="healthy" if is_healthy else "unhealthy",
-        ollama_host=ollama_status["ollama_host"],
-        ollama_reachable=ollama_status["ollama_reachable"],
-        model=ollama_status["model"],
-        model_available=ollama_status["model_available"],
-        error=ollama_status["error"],
+        ollama_host=ollama_status.ollama_host,
+        ollama_reachable=ollama_status.ollama_reachable,
+        model=ollama_status.model,
+        model_available=ollama_status.model_available,
+        error=ollama_status.error,
     )
 
 
 def main() -> None:
-    """CLI entry point for REST API server."""
+    """
+    CLI entry point for REST API server.
+
+    This is used by the `run-transformerbee-rest-api` console script (defined in pyproject.toml).
+    Docker uses `fastapi run` instead, which directly imports the `app` object.
+    """
     import uvicorn
 
     port = int(os.getenv("PORT", "8080"))

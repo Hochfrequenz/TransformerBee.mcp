@@ -4,7 +4,8 @@ import pytest
 from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
 
-from transformerbeemcp.rest_api import app, _rate_limit_store, verify_token
+from transformerbeemcp.rest_api import app, _rate_limit_store, verify_token, HealthResponse
+from transformerbeemcp.summarizer import OllamaHealthStatus
 
 
 @pytest.fixture
@@ -24,60 +25,64 @@ def clear_rate_limit_store():
 def test_health_endpoint_healthy(client):
     """Test health endpoint returns healthy when Ollama is available."""
     with patch("transformerbeemcp.rest_api.check_ollama_health", new_callable=AsyncMock) as mock_health:
-        mock_health.return_value = {
-            "ollama_host": "http://localhost:11434",
-            "ollama_reachable": True,
-            "model": "llama3",
-            "model_available": True,
-            "error": None,
-        }
+        mock_health.return_value = OllamaHealthStatus(
+            ollama_host="http://localhost:11434",
+            ollama_reachable=True,
+            model="llama3",
+            model_available=True,
+            error=None,
+        )
 
         response = client.get("/health")
         assert response.status_code == 200
         data = response.json()
-        assert data["status"] == "healthy"
-        assert data["ollama_reachable"] is True
-        assert data["model_available"] is True
-        assert data["error"] is None
+        health_response = HealthResponse.model_validate(data)
+        assert health_response.status == "healthy"
+        assert health_response.ollama_reachable is True
+        assert health_response.model_available is True
+        assert health_response.error is None
 
 
 def test_health_endpoint_unhealthy_ollama_unreachable(client):
     """Test health endpoint returns unhealthy when Ollama is not reachable."""
     with patch("transformerbeemcp.rest_api.check_ollama_health", new_callable=AsyncMock) as mock_health:
-        mock_health.return_value = {
-            "ollama_host": "http://localhost:11434",
-            "ollama_reachable": False,
-            "model": "llama3",
-            "model_available": False,
-            "error": "Cannot connect to Ollama",
-        }
+        mock_health.return_value = OllamaHealthStatus(
+            ollama_host="http://localhost:11434",
+            ollama_reachable=False,
+            model="llama3",
+            model_available=False,
+            error="Cannot connect to Ollama",
+        )
 
         response = client.get("/health")
         assert response.status_code == 200
         data = response.json()
-        assert data["status"] == "unhealthy"
-        assert data["ollama_reachable"] is False
-        assert data["error"] == "Cannot connect to Ollama"
+        health_response = HealthResponse.model_validate(data)
+        assert health_response.status == "unhealthy"
+        assert health_response.ollama_reachable is False
+        assert health_response.error == "Cannot connect to Ollama"
 
 
 def test_health_endpoint_unhealthy_model_not_found(client):
     """Test health endpoint returns unhealthy when model is not available."""
     with patch("transformerbeemcp.rest_api.check_ollama_health", new_callable=AsyncMock) as mock_health:
-        mock_health.return_value = {
-            "ollama_host": "http://localhost:11434",
-            "ollama_reachable": True,
-            "model": "llama3",
-            "model_available": False,
-            "error": "Model 'llama3' not found",
-        }
+        mock_health.return_value = OllamaHealthStatus(
+            ollama_host="http://localhost:11434",
+            ollama_reachable=True,
+            model="llama3",
+            model_available=False,
+            error="Model 'llama3' not found",
+        )
 
         response = client.get("/health")
         assert response.status_code == 200
         data = response.json()
-        assert data["status"] == "unhealthy"
-        assert data["ollama_reachable"] is True
-        assert data["model_available"] is False
-        assert "not found" in data["error"]
+        health_response = HealthResponse.model_validate(data)
+        assert health_response.status == "unhealthy"
+        assert health_response.ollama_reachable is True
+        assert health_response.model_available is False
+        assert health_response.error is not None
+        assert "not found" in health_response.error
 
 
 def test_summarize_no_auth(client):
