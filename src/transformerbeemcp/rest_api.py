@@ -12,7 +12,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import PyJWKClient
 from pydantic import BaseModel
 
-from transformerbeemcp.summarizer import summarize_edifact
+from transformerbeemcp.summarizer import check_ollama_health, summarize_edifact
 
 _logger = logging.getLogger(__name__)
 
@@ -154,10 +154,37 @@ async def summarize(request: SummarizeRequest, token_payload: dict = Depends(ver
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@app.get("/health")
-async def health() -> dict:
-    """Health check endpoint (no auth required)."""
-    return {"status": "ok"}
+class HealthResponse(BaseModel):
+    """Health check response body."""
+
+    status: str
+    ollama_host: str
+    ollama_reachable: bool
+    model: str
+    model_available: bool
+    error: str | None = None
+
+
+@app.get("/health", response_model=HealthResponse)
+async def health() -> HealthResponse:
+    """
+    Health check endpoint (no auth required).
+
+    Checks if Ollama is reachable and the configured model is available.
+    Returns status "healthy" only if all checks pass.
+    """
+    ollama_status = await check_ollama_health()
+
+    is_healthy = ollama_status["ollama_reachable"] and ollama_status["model_available"]
+
+    return HealthResponse(
+        status="healthy" if is_healthy else "unhealthy",
+        ollama_host=ollama_status["ollama_host"],
+        ollama_reachable=ollama_status["ollama_reachable"],
+        model=ollama_status["model"],
+        model_available=ollama_status["model_available"],
+        error=ollama_status["error"],
+    )
 
 
 def main() -> None:

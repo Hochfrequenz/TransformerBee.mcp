@@ -230,12 +230,41 @@ Generate a German summary of an EDIFACT message.
 **Rate Limiting:** 10 requests per minute per user (configurable via `RATE_LIMIT` env var).
 
 #### `GET /health`
-Health check endpoint (no authentication required).
+Health check endpoint (no authentication required). Verifies Ollama connectivity and model availability.
 
-**Response:**
+**Response (healthy):**
 ```json
 {
-  "status": "ok"
+  "status": "healthy",
+  "ollama_host": "http://localhost:11434",
+  "ollama_reachable": true,
+  "model": "llama3",
+  "model_available": true,
+  "error": null
+}
+```
+
+**Response (unhealthy - Ollama not reachable):**
+```json
+{
+  "status": "unhealthy",
+  "ollama_host": "http://localhost:11434",
+  "ollama_reachable": false,
+  "model": "llama3",
+  "model_available": false,
+  "error": "Cannot connect to Ollama at http://localhost:11434: ..."
+}
+```
+
+**Response (unhealthy - model not found):**
+```json
+{
+  "status": "unhealthy",
+  "ollama_host": "http://localhost:11434",
+  "ollama_reachable": true,
+  "model": "llama3",
+  "model_available": false,
+  "error": "Model 'llama3' not found. Available: ['tinyllama:latest']"
 }
 ```
 

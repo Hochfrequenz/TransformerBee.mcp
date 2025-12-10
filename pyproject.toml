@@ -32,7 +32,9 @@ dynamic = ["readme", "version"]
 
 [project.optional-dependencies]
 tests = [
-    "pytest==9.0.2"
+    "pytest==9.0.2",
+    "pytest-asyncio>=0.24.0",
+    "testcontainers[ollama]>=4.0.0",
 ]
 linting = [
     "pylint==4.0.4"

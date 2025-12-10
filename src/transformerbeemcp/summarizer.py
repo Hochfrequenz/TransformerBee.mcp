@@ -17,6 +17,58 @@ Erkläre den Nachrichtentyp, die beteiligten Parteien, und die wesentlichen Inha
 Antworte präzise und verständlich für Sachbearbeiter ohne EDIFACT-Kenntnisse."""
 
 
+async def check_ollama_health(timeout: float = 5.0) -> dict:
+    """
+    Check if Ollama is reachable and the configured model is available.
+
+    Args:
+        timeout: Request timeout in seconds
+
+    Returns:
+        dict with keys:
+        - ollama_host: configured host URL
+        - ollama_reachable: bool
+        - model: configured model name
+        - model_available: bool
+        - error: error message if any check failed
+    """
+    result = {
+        "ollama_host": _OLLAMA_HOST,
+        "ollama_reachable": False,
+        "model": _OLLAMA_MODEL,
+        "model_available": False,
+        "error": None,
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            # Check if Ollama is reachable via /api/tags endpoint
+            response = await client.get(f"{_OLLAMA_HOST}/api/tags")
+            response.raise_for_status()
+            result["ollama_reachable"] = True
+
+            # Check if the configured model is available
+            data = response.json()
+            available_models = [m.get("name", "").split(":")[0] for m in data.get("models", [])]
+            # Also check full name with tag (e.g., "llama3:latest")
+            available_models_full = [m.get("name", "") for m in data.get("models", [])]
+
+            if _OLLAMA_MODEL in available_models or _OLLAMA_MODEL in available_models_full:
+                result["model_available"] = True
+            else:
+                result["error"] = f"Model '{_OLLAMA_MODEL}' not found. Available: {available_models_full}"
+
+    except httpx.ConnectError as e:
+        result["error"] = f"Cannot connect to Ollama at {_OLLAMA_HOST}: {e}"
+    except httpx.HTTPStatusError as e:
+        result["ollama_reachable"] = True  # It responded, just with an error
+        result["error"] = f"Ollama returned error: {e.response.status_code}"
+    except Exception as e:
+        result["error"] = f"Unexpected error: {e}"
+
+    return result
+
+
 async def summarize_edifact(edifact: str, timeout: float = 120.0) -> str:
     """
     Generate a German summary of an EDIFACT message using Ollama.
