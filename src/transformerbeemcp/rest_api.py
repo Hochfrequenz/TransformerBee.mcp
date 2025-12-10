@@ -16,13 +16,13 @@ from transformerbeemcp.summarizer import summarize_edifact
 
 _logger = logging.getLogger(__name__)
 
-# Auth0 configuration
-AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN", "hochfrequenz.eu.auth0.com")
-AUTH0_AUDIENCE = os.getenv("AUTH0_AUDIENCE", "https://transformer.bee")
-JWKS_URL = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
+# Auth0 configuration (module-private, not intended for external import)
+_AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN", "hochfrequenz.eu.auth0.com")
+_AUTH0_AUDIENCE = os.getenv("AUTH0_AUDIENCE", "https://transformer.bee")
+_JWKS_URL = f"https://{_AUTH0_DOMAIN}/.well-known/jwks.json"
 
-# CORS configuration
-ALLOWED_ORIGINS = os.getenv(
+# CORS configuration (module-private)
+_ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
     "http://localhost:5173,https://nice-mushroom-04ebea203.3.azurestaticapps.net,https://thankful-water-00644131e.3.azurestaticapps.net",
 ).split(",")
@@ -40,7 +40,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["POST", "GET", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
@@ -54,7 +54,7 @@ def get_jwks_client() -> PyJWKClient:
     """Lazy initialization of JWKS client."""
     global jwks_client  # pylint: disable=global-statement
     if jwks_client is None:
-        jwks_client = PyJWKClient(JWKS_URL)
+        jwks_client = PyJWKClient(_JWKS_URL)
     return jwks_client
 
 
@@ -67,8 +67,8 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
             token,
             signing_key.key,
             algorithms=["RS256"],
-            audience=AUTH0_AUDIENCE,
-            issuer=f"https://{AUTH0_DOMAIN}/",
+            audience=_AUTH0_AUDIENCE,
+            issuer=f"https://{_AUTH0_DOMAIN}/",
         )
         return payload
     except jwt.exceptions.InvalidTokenError as e:
