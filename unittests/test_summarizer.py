@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from transformerbeemcp.summarizer import summarize_edifact, SYSTEM_PROMPT
+from transformerbeemcp.summarizer import summarize_edifact, _SYSTEM_PROMPT
 
 
 @pytest.fixture
@@ -31,7 +31,7 @@ async def test_summarize_edifact_success():
         call_args = mock_client.post.call_args
         assert "/api/generate" in call_args[0][0]
         assert call_args[1]["json"]["model"] == "llama3"
-        assert call_args[1]["json"]["system"] == SYSTEM_PROMPT
+        assert call_args[1]["json"]["system"] == _SYSTEM_PROMPT
         assert call_args[1]["json"]["prompt"] == "UNB+UNOC:3+..."
         assert call_args[1]["json"]["stream"] is False
 

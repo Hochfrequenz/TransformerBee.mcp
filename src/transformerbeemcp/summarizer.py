@@ -7,10 +7,11 @@ import httpx
 
 _logger = logging.getLogger(__name__)
 
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+# Ollama configuration (module-private, not intended for external import)
+_OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+_OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
 
-SYSTEM_PROMPT = """Du bist ein Experte für EDIFACT-Nachrichten im deutschen Energiemarkt.
+_SYSTEM_PROMPT = """Du bist ein Experte für EDIFACT-Nachrichten im deutschen Energiemarkt.
 Fasse die folgende EDIFACT-Nachricht in einfachem Deutsch zusammen.
 Erkläre den Nachrichtentyp, die beteiligten Parteien, und die wesentlichen Inhalte.
 Antworte präzise und verständlich für Sachbearbeiter ohne EDIFACT-Kenntnisse."""
@@ -31,14 +32,14 @@ async def summarize_edifact(edifact: str, timeout: float = 120.0) -> str:
         httpx.HTTPStatusError: If Ollama returns an error response
         httpx.ConnectError: If Ollama is not reachable
     """
-    _logger.info("Summarizing EDIFACT message using model '%s' at '%s'", OLLAMA_MODEL, OLLAMA_HOST)
+    _logger.info("Summarizing EDIFACT message using model '%s' at '%s'", _OLLAMA_MODEL, _OLLAMA_HOST)
 
     async with httpx.AsyncClient(timeout=timeout) as client:
         response = await client.post(
-            f"{OLLAMA_HOST}/api/generate",
+            f"{_OLLAMA_HOST}/api/generate",
             json={
-                "model": OLLAMA_MODEL,
-                "system": SYSTEM_PROMPT,
+                "model": _OLLAMA_MODEL,
+                "system": _SYSTEM_PROMPT,
                 "prompt": edifact,
                 "stream": False,
             },
