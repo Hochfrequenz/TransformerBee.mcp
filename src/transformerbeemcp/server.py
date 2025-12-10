@@ -18,6 +18,8 @@ from transformerbeeclient import (
     UnauthenticatedTransformerBeeClient,
 )
 
+from .summarizer import summarize_edifact
+
 _logger = logging.getLogger(__name__)
 
 _HOST_KEY = "TRANSFORMERBEE_HOST"
@@ -119,6 +121,35 @@ async def convert_bo4e_to_edifact(
         raise
     await ctx.info(f"Successfully converted BO4E to EDIFACT with format version {edifact_format_version}")
     return edifact
+
+
+@mcp.tool(description="Generate a human-readable German summary of an EDIFACT message using a local LLM")
+async def summarize_edifact_message(
+    ctx: Context,  # type:ignore[type-arg]
+    edifact: str,
+) -> str:
+    """
+    Generate a human-readable German summary of an EDIFACT message.
+
+    This tool uses a local Ollama instance to analyze the EDIFACT message and produce
+    a summary explaining the message type, involved parties, and key content.
+    The summary is written in German, suitable for staff without EDIFACT expertise.
+
+    Args:
+        edifact: Raw EDIFACT message string
+
+    Returns:
+        German summary of the EDIFACT message
+    """
+    _logger.info("Summarizing EDIFACT message via MCP tool")
+    try:
+        summary = await summarize_edifact(edifact)
+        await ctx.info("Successfully generated EDIFACT summary")
+        return summary
+    except Exception as e:
+        _logger.exception("Error while summarizing EDIFACT")
+        await ctx.info(f"Error generating summary: {e}")
+        raise
 
 
 def main() -> None:

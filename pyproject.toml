@@ -20,8 +20,14 @@ classifiers = [
 ]
 dependencies = [
     "mcp[cli]",
-    "transformerbeeclient>=0.2.3"
-]     # add all the dependencies here
+    "transformerbeeclient>=0.2.3",
+    # REST API dependencies
+    "fastapi[standard]>=0.115.0",  # [standard] includes fastapi-cli and uvicorn
+    "httpx>=0.28.0",
+    # Auth0 JWT verification
+    "PyJWT>=2.8.0",
+    "cryptography>=42.0.0",
+]
 dynamic = ["readme", "version"]
 
 [project.optional-dependencies]
@@ -101,6 +107,4 @@ sources = ["src"]
 
 [project.scripts]
 run-transformerbee-mcp-server = "transformerbeemcp.server:main"
-# package transformerbeempc
-# module server
-# function main
+run-transformerbee-rest-api = "transformerbeemcp.rest_api:main"

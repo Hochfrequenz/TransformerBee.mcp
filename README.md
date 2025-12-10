@@ -1,10 +1,44 @@
 # TransformerBee.MCP
 
-This is a simple PoC of a Model Context Protocol (MCP) server for [transformer.bee](https://github.com/enercity/edifact-bo4e-converter/), written in Python.
+This is a Model Context Protocol (MCP) server and REST API for [transformer.bee](https://github.com/enercity/edifact-bo4e-converter/), written in Python.
 Under the hood it uses [`python-mcp`](https://github.com/modelcontextprotocol/python-sdk) and [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py).
 
+## Features
+
+- **MCP Server**: Expose transformer.bee conversion tools to AI assistants (Claude Desktop, etc.)
+- **REST API**: HTTP endpoint for EDIFACT summarization using a local LLM (Ollama)
+- **EDIFACT Summarization**: Generate human-readable German summaries of EDIFACT messages
+
+## Environment Variables
+
+All environment variables used by this package:
+
+### MCP Server & Transformer.bee Client
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `TRANSFORMERBEE_HOST` | URL of the transformer.bee backend | - | **Yes** |
+| `TRANSFORMERBEE_CLIENT_ID` | OAuth client ID for authenticated requests | - | No |
+| `TRANSFORMERBEE_CLIENT_SECRET` | OAuth client secret | - | No |
+
+### REST API (Summarization)
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `OLLAMA_HOST` | URL of the Ollama instance | `http://localhost:11434` | No |
+| `OLLAMA_MODEL` | LLM model to use for summarization | `llama3` | No |
+| `AUTH0_DOMAIN` | Auth0 domain for JWT verification | `hochfrequenz.eu.auth0.com` | No |
+| `AUTH0_AUDIENCE` | Auth0 API audience identifier | `https://transformer.bee` | No |
+| `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | `http://localhost:5173,...` | No |
+| `RATE_LIMIT` | Max requests per user per minute | `10` | No |
+| `RATE_WINDOW` | Rate limit window in seconds | `60` | No |
+| `PORT` | REST API server port | `8080` | No |
+| `HOST` | REST API server host | `0.0.0.0` | No |
+
 ## Installation
+
 You can install the MCP server as Python package or pull the Docker image.
+
 ### Install as Python Package
 ```shell
 uv install transformerbeemcp
@@ -13,33 +47,60 @@ or if you are using `pip`:
 ```sh
 pip install transformerbeemcp
 ```
+
 ### Install as Docker Image
+
+There are two Dockerfiles for different use cases:
+
+| Dockerfile | Purpose | Use Case |
+|------------|---------|----------|
+| `Dockerfile` | REST API server (FastAPI) | Web apps calling `/summarize` endpoint |
+| `Dockerfile.mcp` | MCP server (stdio) | AI assistants like Claude Desktop |
+
+**Build locally:**
 ```sh
-docker pull ghcr.io/hochfrequenz/transformerbee.mcp:latest
+# Build REST API image
+docker build -t transformerbee-rest -f Dockerfile .
+
+# Build MCP Server image
+docker build -t transformerbee-mcp -f Dockerfile.mcp .
 ```
 
-## Start the Server via CLI 
-### Python
-_The package ships a simple CLI argument to start the server.
-In a terminal **inside the virtual environment in which you installed the package (here `myvenv`)**, call:
+**Or pull from GHCR:**
+```sh
+# REST API (default)
+docker pull ghcr.io/hochfrequenz/transformerbee.mcp:latest
+
+# MCP Server
+docker pull ghcr.io/hochfrequenz/transformerbee.mcp-mcp:latest
+```
+
+## MCP Server
+
+### Start via CLI
+In a terminal **inside the virtual environment** where you installed the package:
 
 ```sh
 (myvenv) run-transformerbee-mcp-server
 ```
-### Docker
-```sh
-docker run --network host -i --rm -e TRANSFORMERBEE_HOST=http://localhost:5021 ghcr.io/hochfrequenz/transformerbee.mcp:latest
-```
-(For the environment variables `-e ...`, see below or the `transformerbeeclient.py` docs.)
 
-## Register MCP Server in Claude Desktop
-### If you checked out this repository
+### Start via Docker
+```sh
+docker run --network host -i --rm \
+  -e TRANSFORMERBEE_HOST=http://localhost:5021 \
+  ghcr.io/hochfrequenz/transformerbee.mcp:latest
+```
+
+### Register in Claude Desktop
+
+#### If you checked out this repository
 ```sh
 cd path/to/reporoot/src/transformerbeemcp
 mcp install server.py
 ```
-### If you installed the package via pip/uv
-Modify your `claude_desktop_config.json` (that can be found in Claude Desktop menu via "Datei > Einstellungen > Entwickler > Konfiguration bearbeiten"):
+
+#### If you installed the package via pip/uv
+Modify your `claude_desktop_config.json` (found in Claude Desktop menu via "Datei > Einstellungen > Entwickler > Konfiguration bearbeiten"):
 ```json
 {
   "mcpServers": {
@@ -55,17 +116,13 @@ Modify your `claude_desktop_config.json` (that can be found in Claude Desktop me
   }
 }
 ```
-where `C:\github\MyProject\.myvenv` is the path to your virtual environment where you installed the package and `localhost:5021` exposes transformer.bee running in a docker container.
-Alternatively, if you haven't configured this handy CLI command
-https://github.com/Hochfrequenz/TransformerBee.mcp/blob/c0898769670469df13f23b57a55fe4b71ed9795b/pyproject.toml#L101-L102
+where `C:\github\MyProject\.myvenv` is the path to your virtual environment and `localhost:5021` exposes transformer.bee running in a docker container.
 
-you can just call python with non-empty args.
-
-Note that this package marks `uv` as a dev-dependency, so you might need to install it `pip install transformerbeempc[dev]` in your virtual environment as well as a lot of MCP tooling assumes you have `uv` installed.
+Note that this package marks `uv` as a dev-dependency, so you might need to install it `pip install transformerbeempc[dev]` as a lot of MCP tooling assumes you have `uv` installed.
 
 For details about the environment variables and/or starting transformer.bee locally, check [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py) docs.
 
-### If you installed the package via Docker
+#### If you installed the package via Docker
 ```json
 {
   "mcpServers": {
@@ -90,4 +147,66 @@ For details about the environment variables and/or starting transformer.bee loca
   }
 }
 ```
-I'm aware, that using the `--network host` option is a bit hacky and not best practice.
+I'm aware that using the `--network host` option is a bit hacky and not best practice.
+
+## REST API for EDIFACT Summarization
+
+The package also includes a REST API that uses a local LLM (Ollama) to generate human-readable German summaries of EDIFACT messages.
+
+### Start the REST API Server
+
+#### Via CLI
+```sh
+(myvenv) run-transformerbee-rest-api
+```
+
+#### Via Docker
+```sh
+docker run -p 8080:8080 \
+  -e OLLAMA_HOST=http://host.docker.internal:11434 \
+  -e AUTH0_DOMAIN=hochfrequenz.eu.auth0.com \
+  -e AUTH0_AUDIENCE=https://transformer.bee \
+  transformerbee-rest
+```
+
+#### Via Docker Compose (with Ollama sidecar)
+```sh
+# Start the services
+docker-compose up -d
+
+# Pull the LLM model (first time only)
+docker-compose run --rm --profile init ollama-init
+```
+
+### API Endpoints
+
+#### `POST /summarize`
+Generate a German summary of an EDIFACT message.
+
+**Request:**
+```json
+{
+  "edifact": "UNB+UNOC:3+9904321000019:500+9900123000003:500+241210:1245+ABC123456789++TL'"
+}
+```
+
+**Response:**
+```json
+{
+  "summary": "Dies ist eine Zählerstandsmeldung vom Lieferanten (GLN: 9904321000019) an den Netzbetreiber..."
+}
+```
+
+**Authentication:** Requires a valid Auth0 bearer token (same audience as transformer.bee).
+
+**Rate Limiting:** 10 requests per minute per user (configurable via `RATE_LIMIT` env var).
+
+#### `GET /health`
+Health check endpoint (no authentication required).
+
+**Response:**
+```json
+{
+  "status": "ok"
+}
+```

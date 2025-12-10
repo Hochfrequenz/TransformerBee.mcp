@@ -1,0 +1,24 @@
+# Dockerfile for MCP server
+# For REST API, use Dockerfile (default) instead
+
+FROM python:3.14-slim
+LABEL authors="Hochfrequenz Unternehmensberatung GmbH"
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+RUN adduser --disabled-password --gecos "" appuser
+
+WORKDIR /app
+
+# Install dependencies first for better caching
+COPY --chown=appuser:appuser requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY --chown=appuser:appuser src/ ./src/
+
+USER appuser
+
+# MCP server runs via stdio, keep container alive
+ENTRYPOINT ["sh", "-c", "mcp run src/transformerbeemcp/server.py && tail -f /dev/null"]

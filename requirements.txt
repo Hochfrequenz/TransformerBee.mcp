@@ -51,6 +51,9 @@ cryptography==46.0.3
     # via pyjwt
 efoli==2.1.1
     # via transformerbeeclient
+fastapi[standard]>=0.115.0
+    # via transformerbeemcp (pyproject.toml)
+    # [standard] includes fastapi-cli for the `fastapi run` command
 frozenlist==1.8.0
     # via
     #   aiohttp

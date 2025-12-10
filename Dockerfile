@@ -1,26 +1,23 @@
+# Dockerfile for REST API (default)
+# For MCP server, use Dockerfile.mcp instead
+
 FROM python:3.14-slim
 LABEL authors="Hochfrequenz Unternehmensberatung GmbH"
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-RUN adduser --disabled-password --gecos "" appuser
-
 WORKDIR /app
 
-COPY --chown=appuser:appuser src/ ./src/
-COPY --chown=appuser:appuser requirements.txt .
-
+# Install dependencies first for better caching
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-# If you try to run `pip install .` with a pyproject.toml, you'll have problems with the build, because the git tag version is undefined.
-# LookupError: Error getting the version from source `vcs`: setuptools-scm was unable to detect version for /app
-# That's why we cannot use the CLI shortcut in the entrypoint below.
 
 # Copy application code
-COPY --chown=appuser:appuser src/ ./src/
+COPY src/ ./src/
 
-USER appuser
+# Expose port for REST API
+EXPOSE 8080
 
-# the tail command is to not directly exit after starting the server
-# feel free to remove it, but please manually test your changes ;)
-ENTRYPOINT ["sh", "-c", "mcp run src/transformerbeemcp/server.py && tail -f /dev/null"]
+# Use FastAPI CLI for production (official approach)
+CMD ["fastapi", "run", "src/transformerbeemcp/rest_api.py", "--port", "8080", "--host", "0.0.0.0"]
