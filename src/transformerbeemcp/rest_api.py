@@ -99,6 +99,7 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
             audience=_AUTH0_AUDIENCE,
             issuer=f"https://{_AUTH0_DOMAIN}/",
         )
+        _logger.debug("Token is still valid")
         return payload
     except jwt.exceptions.InvalidTokenError as e:
         _logger.warning("Invalid token: %s", e)
@@ -125,6 +126,7 @@ def check_rate_limit(user_id: str) -> None:
         raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Max {_RATE_LIMIT} requests per minute.")
 
     _rate_limit_store[user_id].append(now)
+    _logger.debug("Rate limit stored for user %s", user_id)
 
 
 class SummarizeRequest(BaseModel):
