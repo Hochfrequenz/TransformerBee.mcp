@@ -203,14 +203,12 @@ flowchart LR
         summarizer --> ollama
     end
 ```
-
-**Services:**
-
-- `summarizer`: The REST API container (from `Dockerfile`)
+with the following services:
+- `summarizer`: The REST API container (from [`Dockerfile`](Dockerfile))
 - `ollama`: Local LLM server running Llama 3
 - `ollama-init`: One-time init container to pull the model
 
-**Usage:**
+##### How to start locally
 
 ```sh
 # Start the services
@@ -257,45 +255,6 @@ Generate a German summary of an EDIFACT message.
 #### `GET /health`
 
 Health check endpoint (no authentication required). Verifies Ollama connectivity and model availability.
-
-**Response (healthy):**
-
-```json
-{
-  "status": "healthy",
-  "ollama_host": "http://localhost:11434",
-  "ollama_reachable": true,
-  "model": "llama3",
-  "model_available": true,
-  "error": null
-}
-```
-
-**Response (unhealthy - Ollama not reachable):**
-
-```json
-{
-  "status": "unhealthy",
-  "ollama_host": "http://localhost:11434",
-  "ollama_reachable": false,
-  "model": "llama3",
-  "model_available": false,
-  "error": "Cannot connect to Ollama at http://localhost:11434: ..."
-}
-```
-
-**Response (unhealthy - model not found):**
-
-```json
-{
-  "status": "unhealthy",
-  "ollama_host": "http://localhost:11434",
-  "ollama_reachable": true,
-  "model": "llama3",
-  "model_available": false,
-  "error": "Model 'llama3' not found. Available: ['tinyllama:latest']"
-}
-```
 
 ## Deployment Guide
 
