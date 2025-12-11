@@ -100,6 +100,8 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
             issuer=f"https://{_AUTH0_DOMAIN}/",
         )
         _logger.debug("Token is still valid")
+        # Store the raw token so it can be forwarded to transformer.bee
+        payload["_raw_token"] = token
         return payload
     except jwt.exceptions.InvalidTokenError as e:
         _logger.warning("Invalid token: %s", e)
@@ -171,7 +173,9 @@ async def summarize(
     _logger.info("Summarization requested by user %s", user_id)
 
     try:
-        summary = await summarize_edifact(request.edifact)
+        # Forward the token to transformer.bee for EDIFACT→BO4E conversion
+        auth_token = token_payload.get("_raw_token", "")
+        summary = await summarize_edifact(request.edifact, auth_token=auth_token)
         return SummarizeResponse(summary=summary)
     except httpx.HTTPStatusError as e:
         _logger.exception("Ollama returned error status")

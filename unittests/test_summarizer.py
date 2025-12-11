@@ -42,11 +42,12 @@ def reset_summarizer_module() -> None:
     """
     transformerbeemcp.summarizer._OLLAMA_HOST = "http://localhost:11434"
     transformerbeemcp.summarizer._OLLAMA_MODEL = "llama3"
+    transformerbeemcp.summarizer._TRANSFORMERBEE_HOST = "http://localhost:5021"
 
 
 @pytest.mark.anyio
-async def test_summarize_edifact_success() -> None:
-    """Test successful summarization."""
+async def test_summarize_bo4e_success() -> None:
+    """Test successful BO4E summarization."""
     mock_response = MagicMock()
     mock_response.json.return_value = {"response": "Dies ist eine Testzusammenfassung."}
     mock_response.raise_for_status = MagicMock()
@@ -57,10 +58,10 @@ async def test_summarize_edifact_success() -> None:
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
 
-        # Re-import to get the functions that use the reset module constants
-        from transformerbeemcp.summarizer import summarize_edifact
+        from transformerbeemcp.summarizer import summarize_bo4e
 
-        result = await summarize_edifact("UNB+UNOC:3+...")
+        bo4e_json = '[{"typ": "Marktnachricht"}]'
+        result = await summarize_bo4e(bo4e_json)
 
         assert result == "Dies ist eine Testzusammenfassung."
         mock_client.post.assert_called_once()
@@ -68,12 +69,33 @@ async def test_summarize_edifact_success() -> None:
         assert "/api/generate" in call_args[0][0]
         assert call_args[1]["json"]["model"] == "llama3"
         assert call_args[1]["json"]["system"] == _SYSTEM_PROMPT
-        assert call_args[1]["json"]["prompt"] == "UNB+UNOC:3+..."
+        assert call_args[1]["json"]["prompt"] == bo4e_json
         assert call_args[1]["json"]["stream"] is False
 
 
 @pytest.mark.anyio
-async def test_summarize_edifact_http_error() -> None:
+async def test_summarize_edifact_success() -> None:
+    """Test successful summarization with EDIFACT→BO4E conversion."""
+    bo4e_json = '[{"typ": "Marktnachricht"}]'
+
+    with (
+        patch("transformerbeemcp.summarizer.convert_edifact_to_bo4e", new_callable=AsyncMock) as mock_convert,
+        patch("transformerbeemcp.summarizer.summarize_bo4e", new_callable=AsyncMock) as mock_summarize,
+    ):
+        mock_convert.return_value = bo4e_json
+        mock_summarize.return_value = "Dies ist eine Testzusammenfassung."
+
+        from transformerbeemcp.summarizer import summarize_edifact
+
+        result = await summarize_edifact("UNB+UNOC:3+...", auth_token="test_token")
+
+        assert result == "Dies ist eine Testzusammenfassung."
+        mock_convert.assert_called_once_with("UNB+UNOC:3+...", "test_token")
+        mock_summarize.assert_called_once_with(bo4e_json, 120.0)
+
+
+@pytest.mark.anyio
+async def test_summarize_bo4e_http_error() -> None:
     """Test handling of HTTP errors from Ollama."""
     mock_client = AsyncMock()
     mock_client.post.side_effect = httpx.HTTPStatusError(
@@ -85,14 +107,14 @@ async def test_summarize_edifact_http_error() -> None:
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
 
-        from transformerbeemcp.summarizer import summarize_edifact
+        from transformerbeemcp.summarizer import summarize_bo4e
 
         with pytest.raises(httpx.HTTPStatusError):
-            await summarize_edifact("UNB+UNOC:3+...")
+            await summarize_bo4e('[{"typ": "Marktnachricht"}]')
 
 
 @pytest.mark.anyio
-async def test_summarize_edifact_connection_error() -> None:
+async def test_summarize_bo4e_connection_error() -> None:
     """Test handling of connection errors to Ollama."""
     mock_client = AsyncMock()
     mock_client.post.side_effect = httpx.ConnectError("Connection refused")
@@ -100,10 +122,21 @@ async def test_summarize_edifact_connection_error() -> None:
     with patch("transformerbeemcp.summarizer.httpx.AsyncClient") as mock_async_client:
         mock_async_client.return_value.__aenter__.return_value = mock_client
 
-        from transformerbeemcp.summarizer import summarize_edifact
+        from transformerbeemcp.summarizer import summarize_bo4e
 
         with pytest.raises(httpx.ConnectError):
-            await summarize_edifact("UNB+UNOC:3+...")
+            await summarize_bo4e('[{"typ": "Marktnachricht"}]')
+
+
+@pytest.mark.anyio
+async def test_convert_edifact_to_bo4e_missing_host() -> None:
+    """Test that convert_edifact_to_bo4e raises ValueError when TRANSFORMERBEE_HOST is not set."""
+    transformerbeemcp.summarizer._TRANSFORMERBEE_HOST = ""
+
+    from transformerbeemcp.summarizer import convert_edifact_to_bo4e
+
+    with pytest.raises(ValueError, match="TRANSFORMERBEE_HOST"):
+        await convert_edifact_to_bo4e("UNB+UNOC:3+...", auth_token="test_token")
 
 
 @pytest.mark.anyio

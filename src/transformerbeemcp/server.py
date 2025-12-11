@@ -18,7 +18,7 @@ from transformerbeeclient import (
     UnauthenticatedTransformerBeeClient,
 )
 
-from transformerbeemcp.summarizer import summarize_edifact
+from transformerbeemcp.summarizer import summarize_bo4e
 
 _logger = logging.getLogger(__name__)
 
@@ -127,24 +127,36 @@ async def convert_bo4e_to_edifact(
 async def summarize_edifact_message(
     ctx: Context,  # type:ignore[type-arg]
     edifact: str,
+    edifact_format_version: EdifactFormatVersion | None = None,
 ) -> str:
     """
     Generate a human-readable German summary of an EDIFACT message.
 
-    This tool uses a local Ollama instance to analyze the EDIFACT message and produce
-    a summary explaining the message type, involved parties, and key content.
+    First converts the EDIFACT to BO4E via transformer.bee, then uses a local
+    Ollama instance to analyze the BO4E and produce a summary explaining the
+    message type, involved parties, and key content.
     The summary is written in German, suitable for staff without EDIFACT expertise.
 
     Args:
         edifact: Raw EDIFACT message string
+        edifact_format_version: EDIFACT format version (defaults to current)
 
     Returns:
         German summary of the EDIFACT message
     """
     _logger.info("Summarizing EDIFACT message via MCP tool")
+    client: TransformerBeeClient = ctx.request_context.lifespan_context.transformerbeeclient
+    if not edifact_format_version:
+        edifact_format_version = get_current_edifact_format_version()
     try:
-        summary = await summarize_edifact(edifact)
-        await ctx.info("Successfully generated EDIFACT summary")
+        # Convert EDIFACT to BO4E first
+        marktnachrichten = await client.convert_to_bo4e(edifact=edifact, edifact_format_version=edifact_format_version)
+        bo4e_json = "[" + ",".join(m.model_dump_json() for m in marktnachrichten) + "]"
+        await ctx.info(f"Converted {len(marktnachrichten)} Marktnachricht(en) to BO4E")
+
+        # Summarize the BO4E
+        summary = await summarize_bo4e(bo4e_json)
+        await ctx.info("Successfully generated summary")
         return summary
     except Exception as e:
         _logger.exception("Error while summarizing EDIFACT")

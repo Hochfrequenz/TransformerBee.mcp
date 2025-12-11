@@ -86,21 +86,21 @@ async def test_check_ollama_health_model_not_found(ollama_host: str, monkeypatch
 
 
 @pytest.mark.anyio
-async def test_summarize_edifact_with_container(set_ollama_env: None) -> None:
-    """Test actual EDIFACT summarization with real Ollama container."""
+async def test_summarize_bo4e_with_container(set_ollama_env: None) -> None:
+    """Test actual BO4E summarization with real Ollama container."""
     # Import after setting env vars
     import importlib
 
     import transformerbeemcp.summarizer
 
     importlib.reload(transformerbeemcp.summarizer)
-    from transformerbeemcp.summarizer import summarize_edifact
+    from transformerbeemcp.summarizer import summarize_bo4e
 
-    # Simple EDIFACT-like message
-    edifact = "UNB+UNOC:3+9904321000019:500+9900123000003:500+241210:1245+ABC123456789++TL'"
+    # Simple BO4E-like JSON message
+    bo4e_json = '[{"typ": "Marktnachricht", "absender": "9904321000019", "empfaenger": "9900123000003"}]'
 
     # This will actually call Ollama - may be slow
-    summary = await summarize_edifact(edifact, timeout=60.0)
+    summary = await summarize_bo4e(bo4e_json, timeout=60.0)
 
     # Just check we got some response
     assert isinstance(summary, str)

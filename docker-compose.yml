@@ -6,6 +6,7 @@ services:
     environment:
       - OLLAMA_HOST=http://ollama:11434
       - OLLAMA_MODEL=llama3
+      - TRANSFORMERBEE_HOST=${TRANSFORMERBEE_HOST:-http://localhost:5021}
       - AUTH0_DOMAIN=hochfrequenz.eu.auth0.com
       - AUTH0_AUDIENCE=https://transformer.bee
       - ALLOWED_ORIGINS=http://localhost:5173,https://nice-mushroom-04ebea203.3.azurestaticapps.net,https://thankful-water-00644131e.3.azurestaticapps.net

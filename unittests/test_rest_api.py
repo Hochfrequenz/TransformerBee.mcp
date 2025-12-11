@@ -107,7 +107,7 @@ def test_summarize_invalid_token(client: TestClient) -> None:
 
 def test_summarize_success(client: TestClient) -> None:
     """Test successful summarization with valid token."""
-    mock_payload: dict[str, Any] = {"sub": "user123", "aud": "https://transformer.bee"}
+    mock_payload: dict[str, Any] = {"sub": "user123", "aud": "https://transformer.bee", "_raw_token": "test_token"}
 
     # Override the dependency properly
     app.dependency_overrides[verify_token] = lambda: mock_payload
@@ -123,14 +123,14 @@ def test_summarize_success(client: TestClient) -> None:
 
         assert response.status_code == 200
         assert response.json() == {"summary": "Dies ist eine Testzusammenfassung."}
-        mock_summarize.assert_called_once_with("UNB+UNOC:3+...")
+        mock_summarize.assert_called_once_with("UNB+UNOC:3+...", auth_token="test_token")
 
     app.dependency_overrides.clear()
 
 
 def test_summarize_rate_limit(client: TestClient) -> None:
     """Test rate limiting kicks in after too many requests."""
-    mock_payload: dict[str, Any] = {"sub": "user456", "aud": "https://transformer.bee"}
+    mock_payload: dict[str, Any] = {"sub": "user456", "aud": "https://transformer.bee", "_raw_token": "test_token"}
 
     app.dependency_overrides[verify_token] = lambda: mock_payload
 
