@@ -135,7 +135,7 @@ sse-starlette==3.0.4
     # via mcp
 starlette==0.50.0
     # via mcp
-transformerbeeclient==0.2.4
+transformerbeeclient==0.3.0
     # via transformerbeemcp (pyproject.toml)
 typer==0.20.0
     # via mcp
