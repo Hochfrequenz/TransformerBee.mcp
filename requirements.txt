@@ -33,7 +33,7 @@ attrs==25.4.0
 # https://github.com/Rogdham/backports.zstd/issues/50
 brotli==1.2.0
     # via aiohttp
-certifi==2025.11.12
+certifi==2026.1.4
     # via
     #   httpcore
     #   httpx
