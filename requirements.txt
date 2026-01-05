@@ -10,7 +10,7 @@ aiodns==3.6.1
     # via aiohttp
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp[speedups]==3.13.2
+aiohttp[speedups]==3.13.3
     # via transformerbeeclient
 aiosignal==1.4.0
     # via aiohttp
