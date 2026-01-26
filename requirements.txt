@@ -133,7 +133,7 @@ shellingham==1.5.4
     # via typer
 sse-starlette==3.2.0
     # via mcp
-starlette==0.51.0
+starlette==0.52.1
     # via mcp
 transformerbeeclient==0.3.0
     # via transformerbeemcp (pyproject.toml)
