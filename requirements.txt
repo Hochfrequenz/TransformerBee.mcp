@@ -82,7 +82,7 @@ mcp[cli]==1.25.0
     # via transformerbeemcp (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
-multidict==6.7.0
+multidict==6.7.1
     # via
     #   aiohttp
     #   yarl
