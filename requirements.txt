@@ -78,7 +78,7 @@ jsonschema-specifications==2025.9.1
     # via jsonschema
 markdown-it-py==4.0.0
     # via rich
-mcp[cli]==1.25.0
+mcp[cli]==1.26.0
     # via transformerbeemcp (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
