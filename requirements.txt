@@ -123,7 +123,7 @@ referencing==0.37.0
     # via
     #   jsonschema
     #   jsonschema-specifications
-rich==14.2.0
+rich==14.3.2
     # via typer
 rpds-py==0.30.0
     # via
