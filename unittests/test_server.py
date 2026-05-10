@@ -1,9 +1,9 @@
 import json
 
 import pytest
-from mcp import ClientSession
-from mcp.server import FastMCP
-from mcp.types import CallToolResult, EmptyResult
+from fastmcp import FastMCP
+from fastmcp.client import Client
+from fastmcp.client.client import CallToolResult
 from transformerbeeclient import BOneyComb
 
 
@@ -12,11 +12,10 @@ async def test_fastmcp_server_initialization(transformerbee_mcp_server: FastMCP)
     """Testet, ob der FastMCP-Server korrekt initialisiert wird."""
     assert transformerbee_mcp_server is not None
     assert transformerbee_mcp_server.name == "TransformerBee.mcp"
-    assert "transformerbeeclient" in transformerbee_mcp_server.dependencies
 
 
 @pytest.mark.anyio
-async def test_convert_edifact_to_bo4e(client_connected_to_server: FastMCP) -> None:
+async def test_convert_edifact_to_bo4e(client_connected_to_server: Client) -> None:
     """Testet das Tool zum Konvertieren von EDIFACT zu BO4E."""
     edifact_message = "UNA:+.? 'UNB+UNOC:3+1234567890123:14+9876543210987:14+210101:1234+00000000000778++ORDERS'"
 
@@ -28,7 +27,7 @@ async def test_convert_edifact_to_bo4e(client_connected_to_server: FastMCP) -> N
 
 
 @pytest.mark.anyio
-async def test_convert_bo4e_to_edifact(client_connected_to_server: FastMCP) -> None:
+async def test_convert_bo4e_to_edifact(client_connected_to_server: Client) -> None:
     """Testet das Tool zum Konvertieren von EDIFACT zu BO4E."""
     response = await client_connected_to_server.call_tool(
         "convert_bo4e_to_edifact",
@@ -39,9 +38,9 @@ async def test_convert_bo4e_to_edifact(client_connected_to_server: FastMCP) -> N
 
 
 @pytest.mark.anyio
-async def test_memory_server_does_not_start_if_host_is_undefined(
-    client_connected_to_server: ClientSession,
+async def test_client_connected_to_server(
+    client_connected_to_server: Client,
 ) -> None:
-    """Shows how a client and server can communicate over memory streams."""
-    response = await client_connected_to_server.send_ping()
-    assert isinstance(response, EmptyResult)
+    """Shows how a client and server can communicate."""
+    response = await client_connected_to_server.ping()
+    assert response is True
