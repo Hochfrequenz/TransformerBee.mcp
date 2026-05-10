@@ -33,7 +33,7 @@ attrs==25.4.0
 # https://github.com/Rogdham/backports.zstd/issues/50
 brotli==1.2.0
     # via aiohttp
-certifi==2026.1.4
+certifi==2026.2.25
     # via
     #   httpcore
     #   httpx
@@ -47,7 +47,7 @@ click==8.3.1
     #   uvicorn
 colorama==0.4.6
     # via click
-cryptography==46.0.4
+cryptography==46.0.5
     # via pyjwt
 efoli==2.1.1
     # via transformerbeeclient
@@ -92,7 +92,7 @@ propcache==0.4.1
     #   yarl
 pycares==5.0.1
     # via aiodns
-pycparser==2.23
+pycparser==3.0
     # via cffi
 pydantic==2.12.5
     # via
@@ -101,7 +101,7 @@ pydantic==2.12.5
     #   transformerbeeclient
 pydantic-core==2.41.5
     # via pydantic
-pydantic-settings==2.12.0
+pydantic-settings==2.13.0
     # via mcp
 pygments==2.19.2
     # via rich
@@ -109,11 +109,11 @@ pyjwt[crypto]==2.11.0
     # via
     #   mcp
     #   transformerbeeclient
-python-dotenv==1.2.1
+python-dotenv==1.2.2
     # via
     #   mcp
     #   pydantic-settings
-python-multipart==0.0.21
+python-multipart==0.0.22
     # via mcp
 pytz==2025.2
     # via efoli
@@ -123,7 +123,7 @@ referencing==0.37.0
     # via
     #   jsonschema
     #   jsonschema-specifications
-rich==14.2.0
+rich==14.3.3
     # via typer
 rpds-py==0.30.0
     # via
@@ -131,13 +131,13 @@ rpds-py==0.30.0
     #   referencing
 shellingham==1.5.4
     # via typer
-sse-starlette==3.2.0
+sse-starlette==3.3.2
     # via mcp
 starlette==0.52.1
     # via mcp
 transformerbeeclient==0.3.0
     # via transformerbeemcp (pyproject.toml)
-typer==0.21.1
+typer==0.23.1
     # via mcp
 typing-extensions==4.15.0
     # via
