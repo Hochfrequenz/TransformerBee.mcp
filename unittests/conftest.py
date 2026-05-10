@@ -1,12 +1,9 @@
-# mainly copied from here:
-# https://github.com/modelcontextprotocol/python-sdk/blob/babb477dffa33f46cdc886bc885eb1d521151430/tests/shared/test_memory.py#L1-L48
+# Testing pattern from https://fastmcp.wiki/en/patterns/testing
 import pytest
 from efoli import EdifactFormatVersion
-from mcp.client.session import ClientSession
-from mcp.server import FastMCP
-from mcp.shared.memory import (
-    create_connected_server_and_client_session,
-)
+from fastmcp import FastMCP
+from fastmcp.client import Client
+from fastmcp.client.transports import FastMCPTransport
 from transformerbeeclient import BOneyComb, Marktnachricht, TransformerBeeClient
 from typing_extensions import AsyncGenerator, Literal
 
@@ -61,10 +58,9 @@ def transformerbee_mcp_server() -> FastMCP:
 
 
 @pytest.fixture
-async def client_connected_to_server(
+async def mcp_client(
     transformerbee_mcp_server: FastMCP, monkeypatch: pytest.MonkeyPatch, inject_dummy_client: None
-) -> AsyncGenerator[ClientSession, None]:
+) -> AsyncGenerator[Client[FastMCPTransport], None]:
     monkeypatch.setenv("TRANSFORMERBEE_HOST", "https://mock.com")
-    # pylint:disable=protected-access
-    async with create_connected_server_and_client_session(transformerbee_mcp_server._mcp_server) as client_session:
-        yield client_session
+    async with Client(transport=transformerbee_mcp_server) as client:
+        yield client

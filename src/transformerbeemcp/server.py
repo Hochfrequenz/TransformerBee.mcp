@@ -4,13 +4,13 @@ MCP server that provides a tool to convert between EDIFACT and BO4E formats usin
 
 import logging
 import os
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
-from typing import AsyncIterator
+from typing import Any
 
 from aiohttp import ClientResponseError
 from efoli import EdifactFormatVersion, get_current_edifact_format_version
-from mcp.server.fastmcp import Context, FastMCP
+from fastmcp import Context, FastMCP
 from transformerbeeclient import (
     AuthenticatedTransformerBeeClient,
     BOneyComb,
@@ -23,13 +23,6 @@ _logger = logging.getLogger(__name__)
 _HOST_KEY = "TRANSFORMERBEE_HOST"
 _CLIENT_ID_KEY = "TRANSFORMERBEE_CLIENT_ID"
 _CLIENT_SECRET_KEY = "TRANSFORMERBEE_CLIENT_SECRET"
-
-
-@dataclass
-class AppContext:
-    """global context for the application"""
-
-    transformerbeeclient: TransformerBeeClient
 
 
 def create_client(host: str, client_id: str | None, client_secret: str | None) -> TransformerBeeClient:
@@ -50,7 +43,7 @@ def create_client(host: str, client_id: str | None, client_secret: str | None) -
 
 
 @asynccontextmanager
-async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:  # pylint:disable=unused-argument
+async def app_lifespan(server: FastMCP) -> AsyncIterator[dict[str, Any]]:  # pylint:disable=unused-argument
     """Manage application lifecycle with type-safe context"""
     _logger.info("Trying to get environment variables; Start with '%s'", _HOST_KEY)
     transformerbee_host: str | None = os.environ.get(_HOST_KEY, None)
@@ -63,24 +56,24 @@ async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:  # pylint:
     transformerbee_client = create_client(transformerbee_host, transformerbee_client_id, transformerbee_client_secret)
     try:
         _logger.info("Instantiating context")
-        yield AppContext(transformerbeeclient=transformerbee_client)
+        yield {"transformerbeeclient": transformerbee_client}
     finally:
         if hasattr(transformerbee_client, "close_session"):
             await transformerbee_client.close_session()
 
 
-mcp = FastMCP("TransformerBee.mcp", dependencies=["transformerbeeclient"], lifespan=app_lifespan)
+mcp = FastMCP("TransformerBee.mcp", lifespan=app_lifespan)
 
 
 @mcp.tool(description="Convert an EDIFACT message to its BO4E equivalent")
 async def convert_edifact_to_bo4e(
-    ctx: Context,  # type: ignore[type-arg] # no idea what the second type arg is
+    ctx: Context,
     edifact: str,
     edifact_format_version: EdifactFormatVersion | None = None,
 ) -> BOneyComb:
     """Tool that uses initialized resources"""
-    _logger.debug("Context: %s", str(ctx.request_context.lifespan_context))
-    client: TransformerBeeClient = ctx.request_context.lifespan_context.transformerbeeclient
+    _logger.debug("Context: %s", str(ctx.lifespan_context))
+    client: TransformerBeeClient = ctx.lifespan_context["transformerbeeclient"]
     if not edifact_format_version:
         edifact_format_version = get_current_edifact_format_version()
     try:
@@ -104,14 +97,14 @@ async def convert_edifact_to_bo4e(
 
 @mcp.tool(description="Convert a BO4E transaktion to its EDIFACT equivalent")
 async def convert_bo4e_to_edifact(
-    ctx: Context,  # type: ignore[type-arg] # no idea what the second type arg is
+    ctx: Context,
     transaktion: BOneyComb,
     edifact_format_version: EdifactFormatVersion | None = None,
 ) -> str:
     """Tool that uses initialized resources"""
     if not edifact_format_version:
         edifact_format_version = get_current_edifact_format_version()
-    client: TransformerBeeClient = ctx.request_context.lifespan_context.transformerbeeclient
+    client: TransformerBeeClient = ctx.lifespan_context["transformerbeeclient"]
     try:
         edifact = await client.convert_to_edifact(boney_comb=transaktion, edifact_format_version=edifact_format_version)
     except Exception:
@@ -127,5 +120,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    # called by 'mcp install server.py' and 'mcp dev server.py'
+    # called by 'fastmcp install server.py' and 'fastmcp dev server.py'
     main()

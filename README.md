@@ -36,7 +36,7 @@ docker run --network host -i --rm -e TRANSFORMERBEE_HOST=http://localhost:5021 g
 ### If you checked out this repository
 ```sh
 cd path/to/reporoot/src/transformerbeemcp
-mcp install server.py
+fastmcp install server.py
 ```
 ### If you installed the package via pip/uv
 Modify your `claude_desktop_config.json` (that can be found in Claude Desktop menu via "Datei > Einstellungen > Entwickler > Konfiguration bearbeiten"):
