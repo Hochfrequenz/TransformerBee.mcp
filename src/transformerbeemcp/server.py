@@ -70,7 +70,7 @@ async def convert_edifact_to_bo4e(
     ctx: Context,
     edifact: str,
     edifact_format_version: EdifactFormatVersion | None = None,
-) -> dict[str, Any]:
+) -> BOneyComb:
     """Tool that uses initialized resources"""
     _logger.debug("Context: %s", str(ctx.lifespan_context))
     client: TransformerBeeClient = ctx.lifespan_context["transformerbeeclient"]
@@ -92,7 +92,7 @@ async def convert_edifact_to_bo4e(
     if len(marktnachricht.transaktionen) > 1:
         raise NotImplementedError(f"More than 1 transaction (got {len(marktnachricht.transaktionen)}) not support yet")
     transaktion = marktnachricht.transaktionen[0]
-    return transaktion.model_dump(mode="json")
+    return transaktion
 
 
 @mcp.tool(description="Convert a BO4E transaktion to its EDIFACT equivalent")
