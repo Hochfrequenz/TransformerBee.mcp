@@ -97,7 +97,7 @@ httpx==0.28.1
     #   mcp
 httpx-sse==0.4.3
     # via mcp
-idna==3.13
+idna==3.14
     # via
     #   anyio
     #   email-validator
