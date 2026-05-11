@@ -42,7 +42,7 @@ coverage = [
 ]
 formatting = [
     "black==26.3.0",
-    "isort==7.0.0"
+    "isort==8.0.1"
 ]
 packaging = [
     "build==1.4.0",
