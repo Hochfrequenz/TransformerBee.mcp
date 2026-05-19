@@ -54,7 +54,7 @@ cffi==2.0.0
     # via
     #   cryptography
     #   pycares
-click==8.3.3
+click==8.4.0
     # via uvicorn
 cryptography==48.0.0
     # via
