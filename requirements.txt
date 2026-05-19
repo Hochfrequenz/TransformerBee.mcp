@@ -76,7 +76,7 @@ email-validator==2.3.0
     # via pydantic
 exceptiongroup==1.3.1
     # via fastmcp
-fastmcp==3.2.4
+fastmcp==3.3.1
     # via transformerbeemcp (pyproject.toml)
 frozenlist==1.8.0
     # via
