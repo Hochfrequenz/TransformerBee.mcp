@@ -8,7 +8,7 @@ aioauth-client==0.30.1
     # via transformerbeeclient
 aiodns==4.0.0
     # via aiohttp
-aiofile==3.9.0
+aiofile==3.11.1
     # via py-key-value-aio
 aiohappyeyeballs==2.6.1
     # via aiohttp
