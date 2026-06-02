@@ -242,7 +242,7 @@ uvicorn==0.46.0
     # via
     #   fastmcp
     #   mcp
-watchfiles==1.1.1
+watchfiles==1.2.0
     # via fastmcp
 websockets==16.0
     # via fastmcp
