@@ -149,7 +149,7 @@ packaging==26.2
     # via fastmcp
 pathable==0.5.0
     # via jsonschema-path
-platformdirs==4.9.6
+platformdirs==4.10.0
     # via fastmcp
 propcache==0.5.2
     # via
