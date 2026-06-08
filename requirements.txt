@@ -184,7 +184,7 @@ python-dotenv==1.2.2
     # via
     #   fastmcp
     #   pydantic-settings
-python-multipart==0.0.28
+python-multipart==0.0.32
     # via mcp
 pytz==2026.2
     # via efoli
