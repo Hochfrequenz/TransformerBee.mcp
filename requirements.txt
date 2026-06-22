@@ -42,7 +42,7 @@ beartype==0.22.9
     # via py-key-value-aio
 brotli==1.2.0
     # via aiohttp
-cachetools==7.1.1
+cachetools==7.1.4
     # via py-key-value-aio
 caio==0.9.25
     # via aiofile
