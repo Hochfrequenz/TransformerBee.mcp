@@ -246,7 +246,7 @@ watchfiles==1.2.0
     # via fastmcp
 websockets==16.0
     # via fastmcp
-yarl==1.23.0
+yarl==1.24.2
     # via aiohttp
 zipp==4.1.0
     # via importlib-metadata
