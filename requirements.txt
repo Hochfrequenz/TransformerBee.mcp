@@ -82,7 +82,7 @@ frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
-griffelib==2.0.2
+griffelib==2.1.0
     # via fastmcp
 h11==0.16.0
     # via
