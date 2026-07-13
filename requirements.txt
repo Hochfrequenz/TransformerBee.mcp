@@ -56,7 +56,7 @@ cffi==2.0.0
     #   pycares
 click==8.4.0
     # via uvicorn
-cryptography==48.0.0
+cryptography==49.0.0
     # via
     #   authlib
     #   joserfc
