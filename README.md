@@ -61,7 +61,7 @@ https://github.com/Hochfrequenz/TransformerBee.mcp/blob/c0898769670469df13f23b57
 
 you can just call python with non-empty args.
 
-Note that this package marks `uv` as a dev-dependency, so you might need to install it `pip install transformerbeempc[dev]` in your virtual environment as well as a lot of MCP tooling assumes you have `uv` installed.
+Note that a lot of MCP tooling assumes you have [`uv`](https://docs.astral.sh/uv/) installed, so you might need to install it in your virtual environment as well.
 
 For details about the environment variables and/or starting transformer.bee locally, check [`transformerbeeclient.py`](https://github.com/Hochfrequenz/TransformerBeeClient.py) docs.
 

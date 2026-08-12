@@ -9,14 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Set up Python
-        uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@v9.0.0
         with:
-          python-version: 3.14
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install tox
+          python-version: "3.14"
       - name: Run Tests and Record Coverage
+        env:
+          # absolute so it stays valid after the `cd unittests` below (mirrors tox's {toxinidir}/src)
+          PYTHONPATH: ${{ github.workspace }}/src
         run: |
-          tox -e coverage
+          cd unittests
+          uv run --group coverage coverage run -m pytest
+          uv run --group coverage coverage html --omit "unittests/*"
+          uv run --group coverage coverage report --fail-under 80 --omit "unittests/*"
