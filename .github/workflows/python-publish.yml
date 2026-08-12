@@ -26,7 +26,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Run the checks
         env:
-          PYTHONPATH: src
+          # absolute so it stays valid after the `cd unittests` for the coverage step (mirrors tox's {toxinidir}/src)
+          PYTHONPATH: ${{ github.workspace }}/src
         run: |
           uv run --group tests pytest
           uv run --group linting pylint transformerbeemcp

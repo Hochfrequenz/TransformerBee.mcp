@@ -14,7 +14,8 @@ jobs:
           python-version: "3.14"
       - name: Run Tests and Record Coverage
         env:
-          PYTHONPATH: src
+          # absolute so it stays valid after the `cd unittests` below (mirrors tox's {toxinidir}/src)
+          PYTHONPATH: ${{ github.workspace }}/src
         run: |
           cd unittests
           uv run --group coverage coverage run -m pytest
