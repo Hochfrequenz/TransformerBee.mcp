@@ -97,10 +97,10 @@ ignore = [
 known-first-party = ["transformerbeemcp"]
 
 [tool.ruff.lint.per-file-ignores]
-# Standing globs: tests may use assert and magic values freely.
+# Standing glob: tests may use assert freely (PLR2004/magic-value-comparison is
+# already ignored globally above).
 "unittests/**" = [
-    "S101",    # assert
-    "PLR2004", # magic-value-comparison
+    "S101", # assert
 ]
 # Generated grandfathering for pre-existing violations (zero lint churn on the
 # black/isort/pylint -> ruff switch). New/changed code is held to the full select
