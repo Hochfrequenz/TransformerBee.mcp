@@ -12,14 +12,9 @@ jobs:
         tool: ["black", "isort"]
     steps:
       - uses: actions/checkout@v7
-      - name: Set up Python
-        uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@v9.0.0
         with:
-          python-version: 3.14
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install .[formatting]
+          python-version: "3.14"
       - name: ${{ matrix.tool }} Code Formatter
         run: |
-          ${{ matrix.tool }} . --check
+          uv run --group formatting ${{ matrix.tool }} . --check

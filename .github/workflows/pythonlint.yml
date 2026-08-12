@@ -11,16 +11,25 @@ jobs:
     strategy:
       matrix:
         linter-env: ["linting", "type_check", "spell_check"]
+    env:
+      PYTHONPATH: src
     steps:
       - uses: actions/checkout@v7
-      - name: Set up Python
-        uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@v9.0.0
         with:
-          python-version: 3.14
-      - name: Install Dependencies
+          python-version: "3.14"
+      - name: Run linting
+        if: matrix.linter-env == 'linting'
         run: |
-          python -m pip install --upgrade pip
-          pip install tox
-      - name: Run ${{ matrix.linter-env }} via Tox
+          uv run --group linting pylint transformerbeemcp
+          uv run --group linting pylint unittests --rcfile=unittests/.pylintrc
+      - name: Run type_check
+        if: matrix.linter-env == 'type_check'
         run: |
-          tox -e ${{ matrix.linter-env }}
+          uv run --group type_check mypy --show-error-codes src/transformerbeemcp --strict
+          uv run --group type_check mypy --show-error-codes unittests --strict
+      - name: Run spell_check
+        if: matrix.linter-env == 'spell_check'
+        run: |
+          uv run --group spell_check codespell --ignore-words=domain-specific-terms.txt src
+          uv run --group spell_check codespell --ignore-words=domain-specific-terms.txt README.md
