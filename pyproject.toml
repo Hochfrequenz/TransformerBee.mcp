@@ -37,7 +37,7 @@ linting = [
     {include-group = "tests"}
 ]
 type_check = [
-    "mypy[pydantic]==2.1.0",
+    "mypy[pydantic]==2.3.0",
     {include-group = "tests"}
 ]
 spell_check = [
