@@ -30,8 +30,7 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/src
         run: |
           uv run --group tests pytest
-          uv run --group linting pylint transformerbeemcp
-          uv run --group linting pylint unittests --rcfile=unittests/.pylintrc
+          uv run --locked --group linting ruff check .
           uv run --group type_check mypy --show-error-codes src/transformerbeemcp --strict
           uv run --group type_check mypy --show-error-codes unittests --strict
           cd unittests

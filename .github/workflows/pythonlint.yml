@@ -21,8 +21,7 @@ jobs:
       - name: Run linting
         if: matrix.linter-env == 'linting'
         run: |
-          uv run --group linting pylint transformerbeemcp
-          uv run --group linting pylint unittests --rcfile=unittests/.pylintrc
+          uv run --locked --group linting ruff check .
       - name: Run type_check
         if: matrix.linter-env == 'type_check'
         run: |
