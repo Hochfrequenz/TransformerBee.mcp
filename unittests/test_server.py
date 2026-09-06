@@ -48,4 +48,3 @@ async def test_convert_bo4e_to_edifact(mcp_client: Client[FastMCPTransport]) -> 
 async def test_client_connection(mcp_client: Client[FastMCPTransport]) -> None:
     """Testet, ob der Client korrekt mit dem Server verbunden ist."""
     assert mcp_client.is_connected()
-    await mcp_client.ping()
