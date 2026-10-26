@@ -1,3 +1,4 @@
+# stays on 3.14: locked brotli, pydantic-core, aiohttp, pycares have no cp315 wheel yet (needs a compiler, slim image has none)
 FROM python:3.14-slim
 LABEL authors="Hochfrequenz Unternehmensberatung GmbH"
 

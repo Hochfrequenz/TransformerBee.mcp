@@ -21,9 +21,9 @@ jobs:
             command: "ruff check --select I ."
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.2
         with:
-          python-version: "3.14"
+          python-version: "3.15"
       - name: ${{ matrix.tool }} Code Formatter
         run: |
           uv run --locked --group linting ${{ matrix.command }}
